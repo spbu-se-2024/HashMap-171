@@ -39,19 +39,19 @@ int main(void) {
 В header:
 
 ```c
-    typedef struct {
-        // fields
-        // ...
-        // fields
+typedef struct {
+    // fields
+    // ...
+    // fields
 
-        // this - в C++ по сути this подставляется автаматически, а в C придется делать вручную
-        HashMapErr (*put)(HashMap *this, ...);
+    // this - в C++ по сути this подставляется автаматически, а в C придется делать вручную
+    HashMapErr (*put)(HashMap *this, ...);
 
-        HashMapErr (*foo)(HashMap *this, ...);
+    HashMapErr (*foo)(HashMap *this, ...);
 
-        HashMapErr (*bar)(HashMap *this, ...);
+    HashMapErr (*bar)(HashMap *this, ...);
 
-    } HashMap;
+} HashMap;
 ```
 
 В initMap(...):
