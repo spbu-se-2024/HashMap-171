@@ -3,4 +3,4 @@ project(SHA_algorithm C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(SHA_algorithm main.c SHA.h SHA.c)
+add_executable(SHA_algorithm src/example.c src/SHA.h src/SHA.c)
