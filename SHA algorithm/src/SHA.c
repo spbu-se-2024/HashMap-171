@@ -10,7 +10,7 @@
 
 #define error(...) (fprintf(stderr, __VA_ARGS__))
 
-unsigned char* formatMessageToBlocks(char* message, unsigned long long size) {
+static unsigned char* formatMessageToBlocks(char* message, unsigned long long size) {
     unsigned int lastBlockSize = size % 64;
     unsigned int lastBlockOffset = size / 64;
     unsigned int blocksCount;
