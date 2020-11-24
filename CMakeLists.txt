@@ -7,4 +7,5 @@ add_executable(
     test
     src/test/main.c
     src/main/hash-functions/sha-1.c
+    src/main/libs/bst/bst.c src/main/libs/bst/bst_err.c
 )
