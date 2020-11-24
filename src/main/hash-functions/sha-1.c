@@ -2,7 +2,7 @@
 // Created by trefi on 20.11.2020.
 //
 
-#include "SHA.h"
+#include "sha-1.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
