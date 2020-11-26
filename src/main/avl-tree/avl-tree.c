@@ -31,9 +31,11 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
 
 
 // TODO : Implement a non-recursive way to free the nodes
-static void AvlTree_recursiveNodeFree(AvlTreeNode *node) {
-    if (node->left != NULL) AvlTree_recursiveNodeFree(node->left);
-    if (node->right != NULL) AvlTree_recursiveNodeFree(node->right);
+static void AvlTree_recursiveNodeFree(AvlTreeNode *node, AvlTreeItemFreeF freeF) {
+    if (node->left != NULL) AvlTree_recursiveNodeFree(node->left, freeF);
+    if (node->right != NULL) AvlTree_recursiveNodeFree(node->right, freeF);
+
+    if (freeF != NULL) freeF(node->item);
     free(node);
 }
 
@@ -41,7 +43,7 @@ AvlTreeErrCode AvlTree_eraseAvlTree(AvlTree *avlTree) {
     if (avlTree == NULL) return AVL_TREE_E_NULL_ARG;
 
 
-    if (avlTree->_tree != NULL) AvlTree_recursiveNodeFree(avlTree->_tree);
+    if (avlTree->_tree != NULL) AvlTree_recursiveNodeFree(avlTree->_tree, avlTree->_freeF);
 
     *avlTree = (AvlTree) {0};
 
