@@ -18,7 +18,7 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->_freeF = freeF;
 
     // TODO : Implement interface
-    avlTree->find = NULL;
+    avlTree->find = AvlTree_find;
     avlTree->next = NULL;
     avlTree->insert = NULL;
     avlTree->delete = NULL;
@@ -58,9 +58,7 @@ AvlTreeErrCode AvlTree_freeAvlTree(AvlTree **pAvlTree) {
     if (pAvlTree == NULL) return AVL_TREE_E_NULL_ARG;
 
 
-    AvlTreeErrCode errCode;
-
-    if ((errCode = AvlTree_eraseAvlTree(*pAvlTree))) return errCode;
+    AvlTree_eraseAvlTree(*pAvlTree);
 
     *pAvlTree = NULL;
 
