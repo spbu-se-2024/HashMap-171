@@ -23,7 +23,7 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->insert = NULL;
     avlTree->delete = NULL;
 
-    avlTree->traverse = NULL;
+    avlTree->traverse = AvlTree_traverse;
     avlTree->clear = AvlTree_clear;
 
     return AVL_TREE_E_OK;

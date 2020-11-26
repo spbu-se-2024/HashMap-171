@@ -14,6 +14,7 @@ static AvlTreeErrCode AvlTree_findMin(AvlTree *this, AvlTreeNode **pMinItemNode)
     AvlTreeNode *node = this->_tree;
 
     if (node != NULL) while (node->left != NULL) node = node->left;
+
     *pMinItemNode = node;
 
     return AVL_TREE_E_OK;
@@ -29,6 +30,7 @@ static AvlTreeErrCode AvlTree_find(AvlTree *this, void *item, AvlTreeNode **pIte
 
 
     AvlTreeNode *node = this->_tree;
+
     while (true) {
         int comp = this->_compF(item, node->item);
 
@@ -40,7 +42,28 @@ static AvlTreeErrCode AvlTree_find(AvlTree *this, void *item, AvlTreeNode **pIte
             if (node->right != NULL) node = node->right; else break;
         }
     }
+
     *pItemNode = node;
+
+    return AVL_TREE_E_OK;
+}
+
+
+/*--------------------------------------------- Traverse through AVL Tree --------------------------------------------*/
+
+// TODO : Implement a non-recursive DFS
+static void AvlTree_dfs(AvlTreeNode *node, AvlTreeTraverserF traverserF) {
+    if (node->left != NULL) AvlTree_dfs(node->left, traverserF);
+    traverserF(node);
+    if (node->right != NULL) AvlTree_dfs(node->right, traverserF);
+}
+
+static AvlTreeErrCode AvlTree_traverse(AvlTree *this, AvlTreeTraverserF traverserF) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (traverserF == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    if (this->_tree != NULL) AvlTree_dfs(this->_tree, traverserF);
 
     return AVL_TREE_E_OK;
 }
@@ -59,6 +82,7 @@ static void AvlTree_recursiveNodeFree(AvlTreeNode *node, AvlTreeItemFreeF freeF)
 
 static AvlTreeErrCode AvlTree_clear(AvlTree *this) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
+
 
     if (this->_tree != NULL) {
         AvlTree_recursiveNodeFree(this->_tree, this->_freeF);
