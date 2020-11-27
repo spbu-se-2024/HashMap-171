@@ -2,21 +2,9 @@
 #define HASHMAP_171_HASH_MAP_H
 
 #include "hash-map-err.h"
+#include "../avl-tree/avl-tree.h"
 
 #include <stddef.h>
-
-
-/*---------------------------------------------------- Data Sector ---------------------------------------------------*/
-
-// TODO : Implement AvlTree and Dynamic Array (Chain)
-typedef struct avl_tree_t AvlTree;
-
-typedef struct dyn_array_t DynArray;
-
-typedef union {
-    AvlTree *tree;
-    DynArray *chain;
-} DataSector;
 
 
 /*--------------------------------------------------- Hash Map Item --------------------------------------------------*/
@@ -36,7 +24,7 @@ typedef void (*TraverserF)(HashMapItem item);
 typedef struct hash_map_t HashMap;
 
 struct hash_map_t {
-    DataSector *_data;
+    AvlTree *_data;
 
     size_t sectorCount;
 

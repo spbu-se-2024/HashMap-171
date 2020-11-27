@@ -13,7 +13,6 @@
   - [ ] printStatistics
 
 - Хранение данных
-  - [ ] Chaining
   - [ ] Binary Search Tree
 
 - Хеш функции
@@ -41,7 +40,6 @@
   - [ ] printStatistics
 
 - Хранение данных
-  - [ ] Chaining
   - [ ] Binary Search Tree
 
 - Хеш функции
