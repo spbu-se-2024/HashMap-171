@@ -17,12 +17,12 @@ struct avl_tree_node_t {
 };
 
 
-/*----------------------------------------------------- AVL Tree -----------------------------------------------------*/
-
 typedef int (*AvlTreeItemCompF)(void *itemA, void *itemB);
 
 typedef void (*AvlTreeItemFreeF)(void *item);
 
+
+/*----------------------------------------------------- AVL Tree -----------------------------------------------------*/
 
 typedef void (*AvlTreeTraverserF)(void *item);
 
@@ -40,6 +40,8 @@ struct avl_tree_t {
     // AVL Tree Interface
 
     AvlTreeErrCode (*find)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
+
+    AvlTreeErrCode (*prev)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode);
 
     AvlTreeErrCode (*next)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode);
 

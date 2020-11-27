@@ -19,7 +19,8 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
 
     // TODO : Implement interface
     avlTree->find = AvlTree_find;
-    avlTree->next = NULL;
+    avlTree->prev = AvlTree_prev;
+    avlTree->next = AvlTree_next;
     avlTree->insert = NULL;
     avlTree->delete = NULL;
 
