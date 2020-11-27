@@ -35,6 +35,18 @@ static AvlTreeErrCode AvlTree_findMax(AvlTree *this, AvlTreeNode **pMaxItemNode)
 }
 
 
+static inline size_t AvlTree_maxSizeT(size_t a, size_t b) { return a < b ? b : a; }
+
+static inline size_t AvlTree_getNodeHeight(AvlTreeNode *node) { return node != NULL ? node->height : 0; }
+
+
+static void AvlTree_updateHeight(AvlTreeNode *node) {
+    if (node == NULL) return;
+    node->height = AvlTree_maxSizeT(AvlTree_getNodeHeight(node->left), AvlTree_getNodeHeight(node->right)) + 1;
+    AvlTree_updateHeight(node->parent);
+}
+
+
 /*------------------------------------------------- Find Item's Node -------------------------------------------------*/
 
 static AvlTreeErrCode AvlTree_find(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
@@ -109,6 +121,59 @@ static AvlTreeErrCode AvlTree_next(AvlTree *this, AvlTreeNode *node, AvlTreeNode
     }
 
     *pNextNode = node;
+
+    return AVL_TREE_E_OK;
+}
+
+
+/*---------------------------------------------------- Insert Item ---------------------------------------------------*/
+
+static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pNewNode) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (item == NULL) return AVL_TREE_E_NULL_ARG;
+    // Possibly optional
+    // if (pNewNode == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    AvlTreeErrCode errCode;
+
+    AvlTreeNode *node;
+    if ((errCode = this->find(this, item, &node))) return errCode;
+
+    if (node == NULL) {
+        this->_tree = malloc(sizeof(AvlTreeNode));
+        if (this->_tree == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+        *this->_tree = (AvlTreeNode) {item, .count = 1, .height = 1};
+
+        node = this->_tree;
+    } else {
+        int comp = this->_compF(item, node->item);
+
+        if (comp < 0) {
+            node->left = malloc(sizeof(AvlTreeNode));
+            if (node->left == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+            *node->left = (AvlTreeNode) {item, .count = 1, .height = 1, .parent = node};
+
+            node = node->left;
+        } else if (comp == 0) {
+            ++node->count;
+            this->_freeF(item);
+        } else {
+            node->right = malloc(sizeof(AvlTreeNode));
+            if (node->right == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+            *node->right = (AvlTreeNode) {item, .count = 1, .height = 1, .parent = node};
+
+            node = node->right;
+        }
+    }
+
+    AvlTree_updateHeight(node);
+
+    // TODO : Implement balance
+    // AvlTree_balance(node);
 
     return AVL_TREE_E_OK;
 }

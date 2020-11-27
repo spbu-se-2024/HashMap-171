@@ -21,7 +21,7 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->find = AvlTree_find;
     avlTree->prev = AvlTree_prev;
     avlTree->next = AvlTree_next;
-    avlTree->insert = NULL;
+    avlTree->insert = AvlTree_insert;
     avlTree->delete = NULL;
 
     avlTree->traverse = AvlTree_traverse;

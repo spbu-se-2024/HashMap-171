@@ -10,6 +10,7 @@ typedef struct avl_tree_node_t AvlTreeNode;
 
 struct avl_tree_node_t {
     void *item;
+    size_t count;
     size_t height;
     AvlTreeNode *parent;
     AvlTreeNode *left;
