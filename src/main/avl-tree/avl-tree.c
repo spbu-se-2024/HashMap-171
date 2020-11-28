@@ -61,6 +61,8 @@ AvlTreeErrCode AvlTree_freeAvlTree(AvlTree **pAvlTree) {
 
     AvlTree_eraseAvlTree(*pAvlTree);
 
+    free(*pAvlTree);
+
     *pAvlTree = NULL;
 
     return AVL_TREE_E_OK;
