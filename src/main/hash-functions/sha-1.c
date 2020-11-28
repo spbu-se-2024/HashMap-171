@@ -2,7 +2,7 @@
 // Created by trefi on 20.11.2020.
 //
 
-#include "sha-1.h"
+#include "hash-function.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -10,7 +10,7 @@
 
 #define error(...) (fprintf(stderr, __VA_ARGS__))
 
-static unsigned char* formatMessageToBlocks(char* message, unsigned long long size) {
+static unsigned char* formatMessageToBlocks(const char* message, unsigned long long size) {
     unsigned int lastBlockSize = size % 64;
     unsigned int lastBlockOffset = size / 64;
     unsigned int blocksCount;
@@ -24,7 +24,6 @@ static unsigned char* formatMessageToBlocks(char* message, unsigned long long si
     }
     buffer = (unsigned char*)calloc(blocksCount, 64);
     if(buffer == NULL) {
-        error("Bad memory alloc in formatMessageToBlocks");
         return NULL;
     }
     for(unsigned i = 0; i < lastBlockOffset; i++) {
@@ -57,10 +56,10 @@ static unsigned char* formatMessageToBlocks(char* message, unsigned long long si
     return buffer;
 }
 
-void SHA_1(char* message, unsigned long long size, unsigned int* hash) { //TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
+enum HashError SHA_1(const char *message, size_t size, unsigned int *hash) { //TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
     unsigned char* buffer = formatMessageToBlocks(message, size);
     if(buffer == NULL) {
-        return;
+        return ALLOCATION_ERROR;
     }
 
     hash[0] = 0x67452301;
