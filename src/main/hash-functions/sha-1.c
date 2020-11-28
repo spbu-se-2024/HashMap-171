@@ -122,4 +122,5 @@ enum HashError SHA_1(const char *message, size_t size, unsigned int *hash) { //T
     }
 
     free(buffer);
+    return OK;
 }
