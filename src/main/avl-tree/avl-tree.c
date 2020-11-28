@@ -19,6 +19,7 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
 
     // TODO : Implement interface
     avlTree->find = AvlTree_find;
+    avlTree->findClosest = AvlTree_findClosest;
     avlTree->prev = AvlTree_prev;
     avlTree->next = AvlTree_next;
     avlTree->insert = AvlTree_insert;
