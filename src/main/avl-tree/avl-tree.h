@@ -42,6 +42,8 @@ struct avl_tree_t {
 
     AvlTreeErrCode (*find)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
 
+    AvlTreeErrCode (*findClosest)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
+
     AvlTreeErrCode (*prev)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode);
 
     AvlTreeErrCode (*next)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode);

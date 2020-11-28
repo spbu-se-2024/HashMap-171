@@ -57,15 +57,38 @@ static AvlTreeErrCode AvlTree_find(AvlTree *this, void *item, AvlTreeNode **pIte
 
     AvlTreeNode *node = this->_tree;
 
-    while (true) {
+    while (node != NULL) {
         int comp = this->_compF(item, node->item);
 
-        if (comp < 0) {
-            if (node->left != NULL) node = node->left; else break;
-        } else if (comp == 0) {
-            break;
-        } else {
-            if (node->right != NULL) node = node->right; else break;
+        if (comp < 0) node = node->left;
+        else if (comp == 0) break;
+        else node = node->right;
+    }
+
+    *pItemNode = node;
+
+    return AVL_TREE_E_OK;
+}
+
+static AvlTreeErrCode AvlTree_findClosest(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (item == NULL) return AVL_TREE_E_NULL_ARG;
+    if (pItemNode == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    AvlTreeNode *node = this->_tree;
+
+    if (node != NULL) {
+        while (true) {
+            int comp = this->_compF(item, node->item);
+
+            if (comp < 0) {
+                if (node->left != NULL) node = node->left; else break;
+            } else if (comp == 0) {
+                break;
+            } else {
+                if (node->right != NULL) node = node->right; else break;
+            }
         }
     }
 
@@ -138,7 +161,7 @@ static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pN
     AvlTreeErrCode errCode;
 
     AvlTreeNode *node;
-    if ((errCode = this->find(this, item, &node))) return errCode;
+    if ((errCode = this->findClosest(this, item, &node))) return errCode;
 
     if (node == NULL) {
         this->_tree = malloc(sizeof(AvlTreeNode));
