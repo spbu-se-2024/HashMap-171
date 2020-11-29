@@ -3,12 +3,10 @@
 //
 
 #include "hash-function.h"
-#include <stdio.h>
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
-
-#define error(...) (fprintf(stderr, __VA_ARGS__))
 
 static unsigned char *formatMessageToBlocks(const char *message, unsigned long long size) {
     unsigned int lastBlockSize = size % 64;
@@ -54,11 +52,14 @@ static unsigned char *formatMessageToBlocks(const char *message, unsigned long l
     return buffer;
 }
 
-enum HashError SHA_1(const char *message, size_t size,
-                     unsigned int *hash) { //TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
+// TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
+HashFuncErrCode SHA_1(
+    const char *message, size_t size,
+    unsigned int *hash
+) {
     unsigned char *buffer = formatMessageToBlocks(message, size);
     if (buffer == NULL) {
-        return ALLOCATION_ERROR;
+        return HASH_FUNC_E_MEM_ALLOC;
     }
 
     hash[0] = 0x67452301;
@@ -118,5 +119,6 @@ enum HashError SHA_1(const char *message, size_t size,
     }
 
     free(buffer);
-    return OK;
+
+    return HASH_FUNC_E_OK;
 }

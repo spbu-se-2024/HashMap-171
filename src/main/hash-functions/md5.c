@@ -3,6 +3,7 @@
 //
 
 #include "hash-function.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -14,13 +15,12 @@
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
 #define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-enum HashError MD5(const char *message, size_t size, unsigned int *hash) {
+HashFuncErrCode MD5(const char *message, size_t size, unsigned int *hash) {
 
     // выравнивание
     uint64_t newSize = (((size + 8) / 64) + 1) * 64;
     uint8_t *newMsg = calloc(newSize + 64, 1);
-    if (newMsg == NULL)
-        return ALLOCATION_ERROR;
+    if (newMsg == NULL) return HASH_FUNC_E_MEM_ALLOC;
     memcpy(newMsg, message, size);
     newMsg[size] = 128;
     uint64_t bitSize = 8 * size;
@@ -116,5 +116,6 @@ enum HashError MD5(const char *message, size_t size, unsigned int *hash) {
     */
 
     free(newMsg);
-    return OK;
+
+    return HASH_FUNC_E_OK;
 }
