@@ -9,12 +9,12 @@
 
 // функции
 #define LEFT_ROTATE(x, c) (((x) << (c)) | ((x) >> (32 - (c))))
-#define FUN_F(b,c,d) (((b) & (c)) | ((~b) & (d)))
-#define FUN_G(b,c,d) (((b) & (d)) | ((~d) & (c)))
-#define FUN_H(b,c,d) ((b) ^ (c) ^ (d))
-#define FUN_I(b,c,d) ((c) ^ ((~d) | (b)))
+#define FUN_F(b, c, d) (((b) & (c)) | ((~b) & (d)))
+#define FUN_G(b, c, d) (((b) & (d)) | ((~d) & (c)))
+#define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
+#define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-enum HashError MD5(const char *message, size_t size, unsigned int *hash){
+enum HashError MD5(const char *message, size_t size, unsigned int *hash) {
 
     // выравнивание
     uint64_t newSize = (((size + 8) / 64) + 1) * 64;
@@ -33,7 +33,7 @@ enum HashError MD5(const char *message, size_t size, unsigned int *hash){
     uint32_t d0 = 0x10325476;
 
     uint32_t s[] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-                    5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20,
+                    5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
                     4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
                     6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 
@@ -93,18 +93,18 @@ enum HashError MD5(const char *message, size_t size, unsigned int *hash){
 
     // запись в hash
     uint8_t *p;
-    p = (uint8_t *)&a0;
+    p = (uint8_t *) &a0;
     for (int i = 0; i < 4; i++)
-        hash[i]=p[i];
-    p = (uint8_t *)&b0;
+        hash[i] = p[i];
+    p = (uint8_t *) &b0;
     for (int i = 0; i < 4; i++)
-        hash[i+4]=p[i];
-    p = (uint8_t *)&c0;
+        hash[i + 4] = p[i];
+    p = (uint8_t *) &c0;
     for (int i = 0; i < 4; i++)
-        hash[i+8]=p[i];
-    p = (uint8_t *)&d0;
+        hash[i + 8] = p[i];
+    p = (uint8_t *) &d0;
     for (int i = 0; i < 4; i++)
-        hash[i+12]=p[i];
+        hash[i + 12] = p[i];
 
     /* sample
     unsigned int hash[16] = {0};

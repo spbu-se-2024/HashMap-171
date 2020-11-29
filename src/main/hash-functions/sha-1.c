@@ -10,55 +10,54 @@
 
 #define error(...) (fprintf(stderr, __VA_ARGS__))
 
-static unsigned char* formatMessageToBlocks(const char* message, unsigned long long size) {
+static unsigned char *formatMessageToBlocks(const char *message, unsigned long long size) {
     unsigned int lastBlockSize = size % 64;
     unsigned int lastBlockOffset = size / 64;
     unsigned int blocksCount;
     unsigned long long sizeInBits = size * 8;
-    unsigned char* buffer;
-    if(lastBlockSize < 56) {
+    unsigned char *buffer;
+    if (lastBlockSize < 56) {
         blocksCount = lastBlockOffset + 1;
-    }
-    else {
+    } else {
         blocksCount = lastBlockOffset + 2;
     }
-    buffer = (unsigned char*)calloc(blocksCount, 64);
-    if(buffer == NULL) {
+    buffer = (unsigned char *) calloc(blocksCount, 64);
+    if (buffer == NULL) {
         return NULL;
     }
-    for(unsigned i = 0; i < lastBlockOffset; i++) {
+    for (unsigned i = 0; i < lastBlockOffset; i++) {
         memcpy(buffer + i * 64, message + i * 64, 64);
     }
     unsigned char terminator = 128;
-    if(lastBlockSize < 56) {
-        for(unsigned int i = 0; i < 56; i++) {
-            if(i < lastBlockSize)
+    if (lastBlockSize < 56) {
+        for (unsigned int i = 0; i < 56; i++) {
+            if (i < lastBlockSize)
                 memcpy(buffer + lastBlockOffset * 64 + i, message + lastBlockOffset + i, 1);
-            else if(i == lastBlockSize)
+            else if (i == lastBlockSize)
                 memcpy(buffer + lastBlockOffset * 64 + i, &terminator, 1);
         }
-        for(unsigned i = 0; i < 8; i++) {
-            memcpy(buffer + lastBlockOffset * 64 + i + 56, (unsigned char*)(&sizeInBits) + 8 - i - 1, 1);
+        for (unsigned i = 0; i < 8; i++) {
+            memcpy(buffer + lastBlockOffset * 64 + i + 56, (unsigned char *) (&sizeInBits) + 8 - i - 1, 1);
         }
-    }
-    else if(lastBlockSize >= 56) {
-        for(unsigned int i = 0; i < 64; i++) {
-            if(i < lastBlockSize)
+    } else if (lastBlockSize >= 56) {
+        for (unsigned int i = 0; i < 64; i++) {
+            if (i < lastBlockSize)
                 memcpy(buffer + lastBlockOffset * 64 + i, message + lastBlockOffset * 64 + i, 1);
-            else if(i == lastBlockSize)
+            else if (i == lastBlockSize)
                 memcpy(buffer + lastBlockOffset * 64 + i, &terminator, 1);
         }
-        for(unsigned int i = 0; i < 8; i++) {
-            memcpy(buffer + lastBlockOffset * 64 + i + 120, (unsigned char*)(&sizeInBits) + 8 - i - 1, 1);
+        for (unsigned int i = 0; i < 8; i++) {
+            memcpy(buffer + lastBlockOffset * 64 + i + 120, (unsigned char *) (&sizeInBits) + 8 - i - 1, 1);
         }
     }
 
     return buffer;
 }
 
-enum HashError SHA_1(const char *message, size_t size, unsigned int *hash) { //TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
-    unsigned char* buffer = formatMessageToBlocks(message, size);
-    if(buffer == NULL) {
+enum HashError SHA_1(const char *message, size_t size,
+                     unsigned int *hash) { //TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
+    unsigned char *buffer = formatMessageToBlocks(message, size);
+    if (buffer == NULL) {
         return ALLOCATION_ERROR;
     }
 
@@ -70,7 +69,7 @@ enum HashError SHA_1(const char *message, size_t size, unsigned int *hash) { //T
 
     unsigned int blocksCount = size % 64 < 56 ? size / 64 + 1 : size / 64 + 2;
 
-    for(unsigned int i = 0; i < blocksCount; i++) {
+    for (unsigned int i = 0; i < blocksCount; i++) {
         unsigned int a = hash[0];
         unsigned int b = hash[1];
         unsigned int c = hash[2];
@@ -78,31 +77,28 @@ enum HashError SHA_1(const char *message, size_t size, unsigned int *hash) { //T
         unsigned int e = hash[4];
         unsigned int w[80] = {0};
         unsigned int offset = 64 * i;
-        for(unsigned int j = 0; j < 16; j++) {
-            w[j] = ((unsigned int)buffer[offset + j * 4 + 3] & 0xFF)
-                    | ((unsigned int)buffer[offset + j * 4 + 2] & 0xFF) << 8
-                    | ((unsigned int)buffer[offset + j * 4 + 1] & 0xFF) << 16
-                    | ((unsigned int)buffer[offset + j * 4] & 0xFF) << 24;
+        for (unsigned int j = 0; j < 16; j++) {
+            w[j] = ((unsigned int) buffer[offset + j * 4 + 3] & 0xFF)
+                   | ((unsigned int) buffer[offset + j * 4 + 2] & 0xFF) << 8
+                   | ((unsigned int) buffer[offset + j * 4 + 1] & 0xFF) << 16
+                   | ((unsigned int) buffer[offset + j * 4] & 0xFF) << 24;
         }
-        for(unsigned int j = 16; j < 80; j++) {
+        for (unsigned int j = 16; j < 80; j++) {
             w[j] = w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16];
             w[j] = (w[j] << 1) | (w[j] >> 31); // leftrotate 1
         }
-        for(unsigned int j = 0; j < 80; j++) {
+        for (unsigned int j = 0; j < 80; j++) {
             unsigned int f, k;
-            if(j < 20) {
+            if (j < 20) {
                 f = (b & c) | (~b & d);
                 k = 0x5A827999;
-            }
-            else if(j < 40) {
+            } else if (j < 40) {
                 f = b ^ c ^ d;
                 k = 0x6ED9EBA1;
-            }
-            else if(j < 60) {
+            } else if (j < 60) {
                 f = (b & c) | (b & d) | (c & d);
                 k = 0x8F1BBCDC;
-            }
-            else {
+            } else {
                 f = b ^ c ^ d;
                 k = 0xCA62C1D6;
             }
