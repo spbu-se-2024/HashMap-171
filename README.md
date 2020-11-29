@@ -14,4 +14,4 @@
 
 ### Clion Settings
 
-File -> Manage IDE Settings -> Settings Repository -> Вставьте ссылку \(https://github.com/spbu-se-2024/group-171-idea-settings.git\) -> Overwrite Local
+File -> Manage IDE Settings -> Settings Repository -> Вставьте ссылку (https://github.com/spbu-se-2024/group-171-idea-settings.git) -> Overwrite Local
