@@ -10,6 +10,7 @@
 4) Markdown - ресурсы:
    - https://markdown-it.github.io/
    - https://daringfireball.net/projects/markdown/
+5) [Инструкция по написанию тестов.](https://github.com/spbu-se-2024/HashMap-171/blob/master/src/test/CUTEST_GUIDE.md)
 
 
 ### Clion Settings
