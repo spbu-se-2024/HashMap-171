@@ -55,7 +55,7 @@ static unsigned char *formatMessageToBlocks(const char *message, unsigned long l
 // TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
 HashFuncErrCode SHA_1(
     const char *message, size_t size,
-    unsigned int *hash
+    uint32_t *hash
 ) {
     unsigned char *buffer = formatMessageToBlocks(message, size);
     if (buffer == NULL) {
@@ -71,22 +71,22 @@ HashFuncErrCode SHA_1(
     unsigned int blocksCount = size % 64 < 56 ? size / 64 + 1 : size / 64 + 2;
 
     for (unsigned int i = 0; i < blocksCount; i++) {
-        unsigned int a = hash[0];
-        unsigned int b = hash[1];
-        unsigned int c = hash[2];
-        unsigned int d = hash[3];
-        unsigned int e = hash[4];
+        uint32_t a = hash[0];
+        uint32_t b = hash[1];
+        uint32_t c = hash[2];
+        uint32_t d = hash[3];
+        uint32_t e = hash[4];
         unsigned int w[80] = {0};
         unsigned int offset = 64 * i;
         for (unsigned int j = 0; j < 16; j++) {
-            w[j] = ((unsigned int) buffer[offset + j * 4 + 3] & 0xFF)
-                   | ((unsigned int) buffer[offset + j * 4 + 2] & 0xFF) << 8
-                   | ((unsigned int) buffer[offset + j * 4 + 1] & 0xFF) << 16
-                   | ((unsigned int) buffer[offset + j * 4] & 0xFF) << 24;
+            w[j] = (buffer[offset + j * 4 + 3] & 0xFFu)
+                   | (buffer[offset + j * 4 + 2] & 0xFFu) << 8u
+                   | (buffer[offset + j * 4 + 1] & 0xFFu) << 16u
+                   | (buffer[offset + j * 4] & 0xFFu) << 24u;
         }
         for (unsigned int j = 16; j < 80; j++) {
             w[j] = w[j - 3] ^ w[j - 8] ^ w[j - 14] ^ w[j - 16];
-            w[j] = (w[j] << 1) | (w[j] >> 31); // leftrotate 1
+            w[j] = (w[j] << 1u) | (w[j] >> 31u); // leftrotate 1
         }
         for (unsigned int j = 0; j < 80; j++) {
             unsigned int f, k;
@@ -103,11 +103,11 @@ HashFuncErrCode SHA_1(
                 f = b ^ c ^ d;
                 k = 0xCA62C1D6;
             }
-            unsigned int tmp = (a << 5) | (a >> 27);
+            unsigned int tmp = (a << 5u) | (a >> 27u);
             tmp = tmp + f + e + k + w[j];
             e = d;
             d = c;
-            c = (b << 30) | (b >> 2);
+            c = (b << 30u) | (b >> 2u);
             b = a;
             a = tmp;
         }

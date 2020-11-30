@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
 
 // функции
 #define LEFT_ROTATE(x, c) (((x) << (c)) | ((x) >> (32 - (c))))
@@ -15,7 +14,7 @@
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
 #define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-HashFuncErrCode MD5(const char *message, size_t size, unsigned int *hash) {
+HashFuncErrCode MD5(const char *message, size_t size, uint32_t *hash) {
 
     // выравнивание
     uint64_t newSize = (((size + 8) / 64) + 1) * 64;

@@ -15,16 +15,16 @@
 
 /*------------------------------------------ Polynomial - Int - Calculate --------------------------------------------*/
 
-uint64_t ConvertHash(const unsigned int *hash) {
+uint64_t ConvertHash(const uint32_t *hash) {
     uint64_t ConvertedHash = 0;
     for (unsigned int i = 0; i < HASH_ELEMS_USED; i++) {
-        ConvertedHash = (ConvertedHash << 32) | hash[i];
+        ConvertedHash = (ConvertedHash << 32u) | hash[i];
     }
     return ConvertedHash;
 }
 
 void CheckHash(const char *message, size_t size, uint64_t ExpectedValue, CuTest *tc) {
-    unsigned int hash[HASH_ELEMS_USED + 2] = {0};
+    uint32_t hash[HASH_ELEMS_USED + 2] = {0};
     polynomial(message, size, &(hash[1]));
     CuAssertIntEquals(tc, 0, hash[0]);
     CuAssertIntEquals(tc, ExpectedValue, ConvertHash(&(hash[1])));
