@@ -15,7 +15,7 @@ CuSuite *Md5GetSuite();
 
 CuSuite *PolynomialGetSuite();
 
-void RunAllTests(void) {
+int RunAllTests(void) {
     CuString *output = CuStringNew();
     CuSuite *suite = CuSuiteNew();
 
@@ -30,9 +30,11 @@ void RunAllTests(void) {
     CuSuiteSummary(suite, output);
     CuSuiteDetails(suite, output);
     printf("%s\n", output->buffer);
+
+    return !!suite->failed;
 }
 
 
 int main(void) {
-    RunAllTests();
+    return RunAllTests();
 }
