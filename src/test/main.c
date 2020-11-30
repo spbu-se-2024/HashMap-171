@@ -31,7 +31,7 @@ int RunAllTests(void) {
     CuSuiteDetails(suite, output);
     printf("%s\n", output->buffer);
 
-    return !!suite->failed;
+    return !!suite->failCount;
 }
 
 
