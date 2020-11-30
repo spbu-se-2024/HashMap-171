@@ -51,11 +51,13 @@ struct multiset_t {
 
     MultisetErrCode (*addItem)(Multiset *this, String item);
 
-    MultisetErrCode (*addItemTimes)(Multiset *this, String item, size_t times);
+    // Possibly not needed
+    // MultisetErrCode (*addItemTimes)(Multiset *this, String item, size_t times);
 
     MultisetErrCode (*removeItem)(Multiset *this, String item);
 
-    MultisetErrCode (*removeItemWithCopies)(Multiset *this, String item);
+    // Possibly not needed
+    // MultisetErrCode (*removeItemWithCopies)(Multiset *this, String item);
 
 
     MultisetErrCode (*traverse)(Multiset *this, MultisetTraverserF traverser);
