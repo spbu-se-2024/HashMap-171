@@ -1,11 +1,61 @@
 #include "../../cutest-1.5/CuTest.h"
 
+#include "../main/hash-functions/hash-function.h"
 
-/*-------------------------------------------------- Section Name 1 --------------------------------------------------*/
+#include <stdint.h>
+#include <string.h>
 
-// void <NAME OF YOUR TEST #1>(CuTest *tc) {
-//     CuAssertIntEquals(tc, 25, 5 * 5);
-// }
+#ifndef HASH_ELEMS_USED
+#define HASH_ELEMS_USED 2
+#endif
+#ifndef MULT_PRIME
+#define MULT_PRIME 257
+#endif
+
+
+/*------------------------------------------ Polynomial - Int - Calculate --------------------------------------------*/
+
+uint64_t ConvertHash(const unsigned int *hash) {
+    uint64_t ConvertedHash = 0;
+    for (unsigned int i = 0; i < HASH_ELEMS_USED; i++) {
+        ConvertedHash = (ConvertedHash << 32) | hash[i];
+    }
+    return ConvertedHash;
+}
+
+void CheckHash(const char *message, size_t size, uint64_t ExpectedValue, CuTest *tc) {
+    unsigned int hash[HASH_ELEMS_USED + 2] = {0};
+    polynomial(message, size, &(hash[1]));
+    CuAssertIntEquals(tc, 0, hash[0]);
+    CuAssertIntEquals(tc, ExpectedValue, ConvertHash(&(hash[1])));
+    CuAssertIntEquals(tc, 0, hash[HASH_ELEMS_USED + 1]);
+}
+
+void TestPolynomial_EmptyStr_ReturnZero(CuTest *tc) {
+    char *message = "";
+    size_t size = 0;
+    CheckHash(message, size, 0, tc);
+}
+
+void TestPolynomial_ShortStr_ReturnHash(CuTest *tc) {
+    char *message = "abc";
+    size_t size = strlen(message);
+    uint64_t ExpectedValue = 0;
+    for (unsigned int i = 0; i < size; i++) {
+        ExpectedValue = ExpectedValue * MULT_PRIME + message[i];
+    }
+    CheckHash(message, size, ExpectedValue, tc);
+}
+
+void TestPolynomial_LongStr_ReturnHash(CuTest *tc) {
+    char *message = "zzzzzzzzzzzzzz";
+    size_t size = strlen(message);
+    uint64_t ExpectedValue = 0;
+    for (unsigned int i = 0; i < size; i++) {
+        ExpectedValue = ExpectedValue * MULT_PRIME + message[i];
+    }
+    CheckHash(message, size, ExpectedValue, tc);
+}
 
 
 /*-------------------------------------------------- Section Name 2 --------------------------------------------------*/
@@ -19,11 +69,9 @@
 CuSuite *PolynomialGetSuite() {
     CuSuite *suite = CuSuiteNew();
 
-    // SUITE_ADD_TEST(suite, <NAME OF YOUR TEST #1>);
-    // SUITE_ADD_TEST(suite, <NAME OF YOUR TEST #2>);
-    // SUITE_ADD_TEST(suite, <NAME OF YOUR TEST #3>);
-    // SUITE_ADD_TEST(suite, <NAME OF YOUR TEST #4>);
-    // SUITE_ADD_TEST(suite, <NAME OF YOUR TEST #5>);
+    SUITE_ADD_TEST(suite, TestPolynomial_EmptyStr_ReturnZero);
+    SUITE_ADD_TEST(suite, TestPolynomial_ShortStr_ReturnHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_LongStr_ReturnHash);
 
     return suite;
 }
