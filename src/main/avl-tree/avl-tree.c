@@ -25,7 +25,8 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->prev = AvlTree_prev;
     avlTree->next = AvlTree_next;
     avlTree->insert = AvlTree_insert;
-    avlTree->delete = NULL;
+    avlTree->delete = AvlTree_delete;
+    avlTree->deleteWithDuplicates = AvlTree_deleteWithDuplicates;
 
     avlTree->traverse = AvlTree_traverse;
     avlTree->clear = AvlTree_clear;

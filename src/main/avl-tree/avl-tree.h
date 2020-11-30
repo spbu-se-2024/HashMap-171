@@ -50,7 +50,9 @@ struct avl_tree_t {
 
     AvlTreeErrCode (*insert)(AvlTree *this, void *item, AvlTreeNode **pNewNode);
 
-    AvlTreeErrCode (*delete)(AvlTree *this, AvlTreeNode *node);
+    AvlTreeErrCode (*delete)(AvlTree *this, void *item);
+
+    AvlTreeErrCode (*deleteWithDuplicates)(AvlTree *this, void *item);
 
 
     AvlTreeErrCode (*traverse)(AvlTree *this, AvlTreeTraverserF traverserF);

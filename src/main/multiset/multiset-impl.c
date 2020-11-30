@@ -137,7 +137,7 @@ static MultisetErrCode Multiset_removeItem(Multiset *this, String item) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
     }
 
-    if ((avlTreeErrCode = pAvlTree->delete(pAvlTree, avlTreeNode))) {
+    if ((avlTreeErrCode = pAvlTree->delete(pAvlTree, item))) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
     }
 

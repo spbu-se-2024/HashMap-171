@@ -202,6 +202,89 @@ static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pN
 }
 
 
+/*---------------------------------------------------- Delete Item ---------------------------------------------------*/
+
+static AvlTreeErrCode AvlTree_deleteNode(AvlTree *this, AvlTreeNode *node) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+
+
+    if (node == NULL) return AVL_TREE_E_OK;
+
+    AvlTreeNode *replace = node->left;
+    if (replace != NULL) while (replace->right != NULL) replace = replace->right;
+
+    if (replace != NULL) {
+        replace->right = node->right;
+        if (node->right != NULL) node->right->parent = replace;
+
+        node->left->parent = node->parent;
+        if (node->parent != NULL) {
+            if (node->parent->left == node) node->parent->left = node->left;
+            else node->parent->right = node->left;
+        } else {
+            this->_tree = node->left;
+        }
+    } else {
+        replace = node->right;
+
+        if (node->right != NULL) node->right->parent = node->parent;
+        if (node->parent != NULL) {
+            if (node->parent->left == node) node->parent->left = node->right;
+            else node->parent->right = node->right;
+        } else {
+            this->_tree = node->right;
+        }
+    }
+
+    if (this->_freeF != NULL) this->_freeF(node->item);
+    free(node);
+
+    AvlTree_updateHeight(replace);
+
+    // TODO : Implement balance
+    // AvlTree_balance(replace);
+
+    return AVL_TREE_E_OK;
+}
+
+
+static AvlTreeErrCode AvlTree_delete(AvlTree *this, void *item) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (item == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    AvlTreeErrCode errCode;
+
+
+    AvlTreeNode *node;
+    if ((errCode = this->find(this, item, &node))) return errCode;
+
+    if (node == NULL) return AVL_TREE_E_OK;
+
+    if (node->count == 1) return AvlTree_deleteNode(this, node);
+
+    --node->count;
+
+    return AVL_TREE_E_OK;
+}
+
+static AvlTreeErrCode AvlTree_deleteWithDuplicates(AvlTree *this, void *item) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (item == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    AvlTreeErrCode errCode;
+
+
+    AvlTreeNode *node;
+    if ((errCode = this->find(this, item, &node))) return errCode;
+
+    if (node == NULL) return AVL_TREE_E_OK;
+
+    return AvlTree_deleteNode(this, node);
+}
+
+
 /*--------------------------------------------- Traverse through AVL Tree --------------------------------------------*/
 
 // TODO : Implement a non-recursive DFS
