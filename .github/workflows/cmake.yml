@@ -21,7 +21,7 @@ jobs:
           make
 
       - name: Run Tests
-        run: src/test/run_tests
+        run: build/src/test/run_tests
 
       - name: Run App
-        run: src/main/run_app
+        run: build/src/main/run_app
