@@ -2,22 +2,14 @@
 
 ## Main
 
-- Интерфейс
-  - [ ] Memory management
-  - [ ] getItem
-  - [ ] putItem
-  - [ ] removeItem
-  - [ ] findItem
-  - [ ] traverse
-  - [ ] clear
-  - [ ] printStatistics
+- [ ] Интерфейс
 
 - Хранение данных
   - [ ] Binary Search Tree
 
 - Хеш функции
-  - [ ] Polynomial
-  - [ ] MD5
+  - [x] ~~Polynomial~~
+  - [x] ~~MD5~~
   - [x] ~~SHA-1~~
 
 - Приложение
@@ -29,15 +21,7 @@
 
 ## Test
 
-- Интерфейс
-  - [ ] Memory management
-  - [ ] getItem
-  - [ ] putItem
-  - [ ] removeItem
-  - [ ] findItem
-  - [ ] traverse
-  - [ ] clear
-  - [ ] printStatistics
+- [ ] Интерфейс
 
 - Хранение данных
   - [ ] Binary Search Tree
@@ -46,3 +30,7 @@
   - [ ] Polynomial
   - [ ] MD5
   - [ ] SHA-1
+
+- Приложение
+  - [ ] Парсинг электронной книги и работа с интерфейсом HashMap со входного потока (без хранения промежуточных данных)
+  - [ ] Замер времени работы и печать статистики
