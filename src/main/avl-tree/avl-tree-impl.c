@@ -182,7 +182,7 @@ static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pN
             node = node->left;
         } else if (comp == 0) {
             ++node->count;
-            this->_freeF(item);
+            if (this->_freeF != NULL) this->_freeF(item);
         } else {
             node->right = malloc(sizeof(AvlTreeNode));
             if (node->right == NULL) return AVL_TREE_E_MEM_ALLOC;
