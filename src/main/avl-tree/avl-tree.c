@@ -19,12 +19,12 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->_freeF = freeF;
 
     // Add implementation
-    // TODO : Implement interface
     avlTree->find = AvlTree_find;
     avlTree->findClosest = AvlTree_findClosest;
     avlTree->prev = AvlTree_prev;
     avlTree->next = AvlTree_next;
     avlTree->insert = AvlTree_insert;
+    avlTree->insertTimes = AvlTree_insertTimes;
     avlTree->delete = AvlTree_delete;
     avlTree->deleteWithDuplicates = AvlTree_deleteWithDuplicates;
 

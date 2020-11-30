@@ -201,6 +201,57 @@ static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pN
     return AVL_TREE_E_OK;
 }
 
+static AvlTreeErrCode AvlTree_insertTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
+    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    if (item == NULL) return AVL_TREE_E_NULL_ARG;
+    if (times == 0) return AVL_TREE_E_OTHER;
+    // Possibly optional
+    // if (pNewNode == NULL) return AVL_TREE_E_NULL_ARG;
+
+
+    AvlTreeErrCode errCode;
+
+    AvlTreeNode *node;
+    if ((errCode = this->findClosest(this, item, &node))) return errCode;
+
+    if (node == NULL) {
+        this->_tree = malloc(sizeof(AvlTreeNode));
+        if (this->_tree == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+        *this->_tree = (AvlTreeNode) {item, .count = times, .height = 1};
+
+        node = this->_tree;
+    } else {
+        int comp = this->_compF(item, node->item);
+
+        if (comp < 0) {
+            node->left = malloc(sizeof(AvlTreeNode));
+            if (node->left == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+            *node->left = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
+
+            node = node->left;
+        } else if (comp == 0) {
+            node->count += times;
+            if (this->_freeF != NULL) this->_freeF(item);
+        } else {
+            node->right = malloc(sizeof(AvlTreeNode));
+            if (node->right == NULL) return AVL_TREE_E_MEM_ALLOC;
+
+            *node->right = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
+
+            node = node->right;
+        }
+    }
+
+    AvlTree_updateHeight(node);
+
+    // TODO : Implement balance
+    // AvlTree_balance(node);
+
+    return AVL_TREE_E_OK;
+}
+
 
 /*---------------------------------------------------- Delete Item ---------------------------------------------------*/
 
