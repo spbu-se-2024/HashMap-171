@@ -14,9 +14,11 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
 
     *avlTree = (AvlTree) {0};
 
+
     avlTree->_compF = compF;
     avlTree->_freeF = freeF;
 
+    // Add implementation
     // TODO : Implement interface
     avlTree->find = AvlTree_find;
     avlTree->findClosest = AvlTree_findClosest;

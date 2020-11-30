@@ -25,7 +25,7 @@ typedef void (*AvlTreeItemFreeF)(void *item);
 
 /*----------------------------------------------------- AVL Tree -----------------------------------------------------*/
 
-typedef void (*AvlTreeTraverserF)(void *item);
+typedef void (*AvlTreeTraverserF)(AvlTreeNode *node);
 
 
 typedef struct avl_tree_t AvlTree;
