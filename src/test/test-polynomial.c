@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef HASH_ELEMS_USED
-#define HASH_ELEMS_USED 2
+#ifndef HASH_ELEMENTS_USED
+#define HASH_ELEMENTS_USED 2
 #endif
 #ifndef MULT_PRIME
 #define MULT_PRIME 257
@@ -17,18 +17,18 @@
 
 uint64_t ConvertHash(const uint32_t *hash) {
     uint64_t ConvertedHash = 0;
-    for (unsigned int i = 0; i < HASH_ELEMS_USED; i++) {
+    for (unsigned int i = 0; i < HASH_ELEMENTS_USED; i++) {
         ConvertedHash = (ConvertedHash << 32u) | hash[i];
     }
     return ConvertedHash;
 }
 
 void CheckHash(const char *message, size_t size, uint64_t ExpectedValue, CuTest *tc) {
-    uint32_t hash[HASH_ELEMS_USED + 2] = {0};
-    polynomial(message, size, &(hash[1]));
+    uint32_t hash[HASH_ELEMENTS_USED + 2] = {0};
+    calculatePolynomialHash(message, size, &(hash[1]));
     CuAssertIntEquals(tc, 0, hash[0]);
     CuAssertIntEquals(tc, ExpectedValue, ConvertHash(&(hash[1])));
-    CuAssertIntEquals(tc, 0, hash[HASH_ELEMS_USED + 1]);
+    CuAssertIntEquals(tc, 0, hash[HASH_ELEMENTS_USED + 1]);
 }
 
 void TestPolynomial_EmptyStr_ReturnZero(CuTest *tc) {

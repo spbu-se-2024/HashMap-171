@@ -14,8 +14,7 @@
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
 #define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-HashFuncErrCode MD5(const char *message, size_t size, uint32_t *hash) {
-
+HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
     // выравнивание
     uint64_t newSize = (((size + 8) / 64) + 1) * 64;
     uint8_t *newMsg = calloc(newSize + 64, 1);
@@ -118,3 +117,9 @@ HashFuncErrCode MD5(const char *message, size_t size, uint32_t *hash) {
 
     return HASH_FUNC_E_OK;
 }
+
+#undef LEFT_ROTATE
+#undef FUN_F
+#undef FUN_G
+#undef FUN_H
+#undef FUN_I

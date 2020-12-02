@@ -15,11 +15,11 @@ static void TestAvlTree_Int_InsertFind_Exist(CuTest *tc) {
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
     int x = 5;
-    avlTree.insert(&avlTree, &x, NULL);
+    avlTree.addItem(&avlTree, &x, NULL);
 
     int y = 5;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrNotNull(tc, node);
 
@@ -31,11 +31,11 @@ static void TestAvlTree_Int_InsertFind_NotExist1(CuTest *tc) {
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
     int x = 5;
-    avlTree.insert(&avlTree, &x, NULL);
+    avlTree.addItem(&avlTree, &x, NULL);
 
     int y = 4;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrEquals(tc, NULL, node);
 
@@ -47,11 +47,11 @@ static void TestAvlTree_Int_InsertFind_NotExist2(CuTest *tc) {
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
     int x = 5;
-    avlTree.insert(&avlTree, &x, NULL);
+    avlTree.addItem(&avlTree, &x, NULL);
 
     int y = 6;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrEquals(tc, NULL, node);
 
@@ -66,14 +66,14 @@ static void TestAvlTree_Int_InsertFind_ExistWithDuplicates(CuTest *tc) {
     int x2 = 5;
     int x3 = 5;
     int x4 = 5;
-    avlTree.insert(&avlTree, &x1, NULL);
-    avlTree.insert(&avlTree, &x2, NULL);
-    avlTree.insert(&avlTree, &x3, NULL);
-    avlTree.insert(&avlTree, &x4, NULL);
+    avlTree.addItem(&avlTree, &x1, NULL);
+    avlTree.addItem(&avlTree, &x2, NULL);
+    avlTree.addItem(&avlTree, &x3, NULL);
+    avlTree.addItem(&avlTree, &x4, NULL);
 
     int y = 5;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrNotNull(tc, node);
 
@@ -88,14 +88,14 @@ static void TestAvlTree_Int_InsertFind_NotExistWithDuplicates1(CuTest *tc) {
     int x2 = 5;
     int x3 = 5;
     int x4 = 5;
-    avlTree.insert(&avlTree, &x1, NULL);
-    avlTree.insert(&avlTree, &x2, NULL);
-    avlTree.insert(&avlTree, &x3, NULL);
-    avlTree.insert(&avlTree, &x4, NULL);
+    avlTree.addItem(&avlTree, &x1, NULL);
+    avlTree.addItem(&avlTree, &x2, NULL);
+    avlTree.addItem(&avlTree, &x3, NULL);
+    avlTree.addItem(&avlTree, &x4, NULL);
 
     int y = 2;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrEquals(tc, NULL, node);
 
@@ -110,14 +110,14 @@ static void TestAvlTree_Int_InsertFind_NotExistWithDuplicates2(CuTest *tc) {
     int x2 = 5;
     int x3 = 5;
     int x4 = 5;
-    avlTree.insert(&avlTree, &x1, NULL);
-    avlTree.insert(&avlTree, &x2, NULL);
-    avlTree.insert(&avlTree, &x3, NULL);
-    avlTree.insert(&avlTree, &x4, NULL);
+    avlTree.addItem(&avlTree, &x1, NULL);
+    avlTree.addItem(&avlTree, &x2, NULL);
+    avlTree.addItem(&avlTree, &x3, NULL);
+    avlTree.addItem(&avlTree, &x4, NULL);
 
     int y = 8;
     AvlTreeNode *node;
-    avlTree.find(&avlTree, &y, &node);
+    avlTree.findItem(&avlTree, &y, &node);
 
     CuAssertPtrEquals(tc, NULL, node);
 

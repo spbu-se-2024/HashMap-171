@@ -52,11 +52,8 @@ static unsigned char *formatMessageToBlocks(const char *message, unsigned long l
     return buffer;
 }
 
-// TODO можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
-HashFuncErrCode SHA_1(
-    const char *message, size_t size,
-    uint32_t *hash
-) {
+// TODO : Можно переделать чтобы выделялось меньше памяти, и выделялось на стеке
+HashFuncErrCode calculateSha1Hash(const char *message, size_t size, uint32_t *hash) {
     unsigned char *buffer = formatMessageToBlocks(message, size);
     if (buffer == NULL) {
         return HASH_FUNC_E_MEM_ALLOC;
