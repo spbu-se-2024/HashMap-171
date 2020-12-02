@@ -177,10 +177,11 @@ static AvlTreeErrCode AvlTree_addItem(AvlTree *this, void *item, AvlTreeNode **p
 static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
-    if (times == 0) return AVL_TREE_E_OTHER;
 
     AvlTreeErrCode errCode;
 
+
+    if (times == 0) return AVL_TREE_E_OK;
 
     AvlTreeNode *node;
     if ((errCode = this->findClosestItem(this, item, &node))) {
