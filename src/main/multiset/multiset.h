@@ -11,9 +11,9 @@
 /*-------------------------------------------------- Multiset Config -------------------------------------------------*/
 
 typedef enum {
-    MULTISET_HASH_FUNC_LABEL_SHA_1,
     MULTISET_HASH_FUNC_LABEL_MD5,
     MULTISET_HASH_FUNC_LABEL_POLYNOMIAL,
+    MULTISET_HASH_FUNC_LABEL_SHA_1,
 } MultisetHashFuncLabel;
 
 typedef struct {
@@ -24,9 +24,19 @@ typedef struct {
 
 /*--------------------------------------------------- Multiset Item --------------------------------------------------*/
 
-typedef const char *String;
+typedef const char *MultisetItem;
 
-typedef void (*MultisetTraverserF)(String item, size_t count);
+typedef void (*MultisetTraverserF)(void *externalData, MultisetItem item, size_t count);
+
+
+/*------------------------------------------------ Multiset Statistics -----------------------------------------------*/
+
+typedef struct {
+    MultisetConfig config;
+    size_t itemsCount;
+    size_t uniqueItemsCount;
+    size_t maxCount;
+} MultisetStats;
 
 
 /*----------------------------------------------------- Multiset -----------------------------------------------------*/
@@ -38,34 +48,31 @@ struct multiset_t {
 
     MultisetConfig _config;
 
-    size_t uniqueItemsCount;
-
     size_t itemsCount;
+
+    size_t uniqueItemsCount;
 
 
     // Multiset Interface
 
-    MultisetErrCode (*hasItem)(Multiset *this, String item, bool *hasItem);
+    MultisetErrCode (*hasItem)(Multiset *this, MultisetItem item, bool *hasItem);
 
-    MultisetErrCode (*countItem)(Multiset *this, String item, size_t *itemCount);
+    MultisetErrCode (*countItem)(Multiset *this, MultisetItem item, size_t *itemCount);
 
-    MultisetErrCode (*addItem)(Multiset *this, String item);
+    MultisetErrCode (*addItem)(Multiset *this, MultisetItem item);
 
-    // Possibly not needed
-    // MultisetErrCode (*addItemTimes)(Multiset *this, String item, size_t times);
+    MultisetErrCode (*addItemTimes)(Multiset *this, MultisetItem item, size_t times);
 
-    MultisetErrCode (*removeItem)(Multiset *this, String item);
+    MultisetErrCode (*removeItem)(Multiset *this, MultisetItem item);
 
-    // Possibly not needed
-    // MultisetErrCode (*removeItemWithCopies)(Multiset *this, String item);
+    MultisetErrCode (*removeItemWithCopies)(Multiset *this, MultisetItem item);
 
 
-    MultisetErrCode (*traverse)(Multiset *this, MultisetTraverserF traverser);
+    MultisetErrCode (*traverse)(Multiset *this, void *externalData, MultisetTraverserF traverser);
 
     MultisetErrCode (*clear)(Multiset *this);
 
-
-    MultisetErrCode (*printStatistics)(Multiset *this);
+    MultisetErrCode (*getStatistics)(Multiset *this, MultisetStats *multisetStats);
 };
 
 

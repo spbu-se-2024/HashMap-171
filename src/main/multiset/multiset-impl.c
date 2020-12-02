@@ -1,8 +1,6 @@
 #include "multiset.h"
 #include "../hash-functions/hash-function.h"
 
-#include <string.h>
-
 
 /*------------------------------------------------------- Utils ------------------------------------------------------*/
 
@@ -24,36 +22,70 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 
 /*------------------------------------------------- Hash conversions -------------------------------------------------*/
 
-static size_t hashSHA_1(String word) {
-    unsigned int buffer[5] = {0};
-
-    SHA_1(word, strlen(word), buffer);
-
-    return ((unsigned long long) buffer[1]) << 32 | ((unsigned long long) buffer[0]);
+// TODO : Implement convertMd5HashToSizeT(...)
+static size_t convertMd5HashToSizeT(MultisetItem item) {
+    return 0;
 }
 
-static size_t getHash(String key, MultisetHashFuncLabel multisetHashFuncLabel) {
-    // TODO : Add other hash functions
+// TODO : Implement convertPolynomialHashToSizeT(...)
+static size_t convertPolynomialHashToSizeT(MultisetItem item) {
+    return 0;
+}
+
+// TODO : Implement convertSha1HashToSizeT(...)
+static size_t convertSha1HashToSizeT(MultisetItem item) {
+    return 0;
+}
+
+
+static size_t getConvertedHash(MultisetItem item, MultisetHashFuncLabel multisetHashFuncLabel) {
     switch (multisetHashFuncLabel) {
+        case MULTISET_HASH_FUNC_LABEL_MD5:
+            return convertMd5HashToSizeT(item);
+        case MULTISET_HASH_FUNC_LABEL_POLYNOMIAL:
+            return convertPolynomialHashToSizeT(item);
         case MULTISET_HASH_FUNC_LABEL_SHA_1:
-            return hashSHA_1(key);
+            return convertSha1HashToSizeT(item);
         default:
             return 0;
     }
 }
 
-static inline size_t Multiset_getItemIndex(String item, MultisetConfig config) {
-    return getHash(item, config.hashFuncLabel) % config.size;
+static inline size_t Multiset_getItemIndex(MultisetItem item, MultisetConfig config) {
+    return getConvertedHash(item, config.hashFuncLabel) % config.size;
 }
+
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------ Multiset Interface ------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------- Has Item & Count Item ----------------------------------------------*/
 
-static MultisetErrCode Multiset_hasItem(Multiset *this, String item, bool *hasItem) {
+static MultisetErrCode Multiset_hasItem(Multiset *this, MultisetItem item, bool *hasItem) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
     if (hasItem == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode errCode;
+
+
+    size_t itemCount;
+    if ((errCode = this->countItem(this, item, &itemCount))) {
+        return errCode;
+    }
+
+    *hasItem = itemCount != 0;
+
+    return MULTISET_E_OK;
+}
+
+static MultisetErrCode Multiset_countItem(Multiset *this, MultisetItem item, size_t *itemCount) {
+    if (this == NULL) return MULTISET_E_NULL_THIS;
+    if (item == NULL) return MULTISET_E_NULL_ARG;
+    if (itemCount == NULL) return MULTISET_E_NULL_ARG;
 
     AvlTreeErrCode avlTreeErrCode;
 
@@ -62,34 +94,9 @@ static MultisetErrCode Multiset_hasItem(Multiset *this, String item, bool *hasIt
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->find(pAvlTree, item, &avlTreeNode))) {
+    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
     }
-
-
-    *hasItem = avlTreeNode != NULL;
-
-    return MULTISET_E_OK;
-}
-
-
-static MultisetErrCode Multiset_countItem(Multiset *this, String item, size_t *itemCount) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-    if (itemCount == NULL) return MULTISET_E_NULL_ARG;
-
-
-    AvlTreeErrCode avlTreeErrCode;
-
-
-    size_t index = getHash(item, this->_config.hashFuncLabel) % this->_config.size;
-    AvlTree *pAvlTree = &this->_data[index];
-
-    AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->find(pAvlTree, item, &avlTreeNode))) {
-        return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-    }
-
 
     *itemCount = avlTreeNode != NULL ? avlTreeNode->count : 0;
 
@@ -99,21 +106,39 @@ static MultisetErrCode Multiset_countItem(Multiset *this, String item, size_t *i
 
 /*----------------------------------------------------- Add Item -----------------------------------------------------*/
 
-static MultisetErrCode Multiset_addItem(Multiset *this, String item) {
+static MultisetErrCode Multiset_addItem(Multiset *this, MultisetItem item) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode errCode;
+
+
+    if ((errCode = this->addItemTimes(this, item, 1))) {
+        return errCode;
+    }
+
+    return MULTISET_E_OK;
+}
+
+static MultisetErrCode Multiset_addItemTimes(Multiset *this, MultisetItem item, size_t times) {
+    if (this == NULL) return MULTISET_E_NULL_THIS;
+    if (item == NULL) return MULTISET_E_NULL_ARG;
 
     AvlTreeErrCode avlTreeErrCode;
 
+
+    if (times == 0) return MULTISET_E_OK;
 
     size_t index = Multiset_getItemIndex(item, this->_config);
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->insert(pAvlTree, item, &avlTreeNode))) {
+    if ((avlTreeErrCode = pAvlTree->addItemTimes(pAvlTree, (void *) item, times, &avlTreeNode))) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
     }
+
+    this->itemsCount += times;
+    if (avlTreeNode->count == times) ++this->uniqueItemsCount;
 
     return MULTISET_E_OK;
 }
@@ -121,10 +146,9 @@ static MultisetErrCode Multiset_addItem(Multiset *this, String item) {
 
 /*---------------------------------------------------- Remove Item ---------------------------------------------------*/
 
-static MultisetErrCode Multiset_removeItem(Multiset *this, String item) {
+static MultisetErrCode Multiset_removeItem(Multiset *this, MultisetItem item) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
-
 
     AvlTreeErrCode avlTreeErrCode;
 
@@ -133,12 +157,48 @@ static MultisetErrCode Multiset_removeItem(Multiset *this, String item) {
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->find(pAvlTree, item, &avlTreeNode))) {
+    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
     }
 
-    if ((avlTreeErrCode = pAvlTree->delete(pAvlTree, item))) {
+    if (avlTreeNode != NULL) {
+        size_t itemCount = avlTreeNode->count;
+
+        if ((avlTreeErrCode = pAvlTree->removeItem(pAvlTree, (void *) item))) {
+            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
+        }
+
+        --this->itemsCount;
+        if (itemCount == 1) --this->uniqueItemsCount;
+    }
+
+    return MULTISET_E_OK;
+}
+
+static MultisetErrCode Multiset_removeItemWithCopies(Multiset *this, MultisetItem item) {
+    if (this == NULL) return MULTISET_E_NULL_THIS;
+    if (item == NULL) return MULTISET_E_NULL_ARG;
+
+    AvlTreeErrCode avlTreeErrCode;
+
+
+    size_t index = Multiset_getItemIndex(item, this->_config);
+    AvlTree *pAvlTree = &this->_data[index];
+
+    AvlTreeNode *avlTreeNode;
+    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
         return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
+    }
+
+    if (avlTreeNode != NULL) {
+        size_t itemCount = avlTreeNode->count;
+
+        if ((avlTreeErrCode = pAvlTree->removeItemWithCopies(pAvlTree, (void *) item))) {
+            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
+        }
+
+        this->itemsCount -= itemCount;
+        --this->uniqueItemsCount;
     }
 
     return MULTISET_E_OK;
@@ -147,28 +207,33 @@ static MultisetErrCode Multiset_removeItem(Multiset *this, String item) {
 
 /*----------------------------------------------------- Traverse -----------------------------------------------------*/
 
-static MultisetTraverserF multisetTraverserF = NULL;
+struct layered_external_data_t {
+    void *externalData;
+    MultisetTraverserF multisetTraverserF;
+};
 
-static void Multiset_avlTreeTraverserF(AvlTreeNode *node) { multisetTraverserF(node->item, node->count); }
+static void Multiset_avlTreeTraverserF(void *externalData, AvlTreeNode *node) {
+    struct layered_external_data_t *layeredExternalData = externalData;
+    layeredExternalData->multisetTraverserF(layeredExternalData->externalData, node->item, node->count);
+}
 
-static MultisetErrCode Multiset_traverse(Multiset *this, MultisetTraverserF traverser) {
+static MultisetErrCode Multiset_traverse(Multiset *this, void *externalData, MultisetTraverserF traverser) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (traverser == NULL) return MULTISET_E_NULL_ARG;
-
 
     AvlTreeErrCode avlTreeErrCode;
 
 
-    multisetTraverserF = traverser;
+    struct layered_external_data_t layeredExternalData = {externalData, traverser};
 
     const size_t multisetSize = this->_config.size;
     for (size_t i = 0; i < multisetSize; i++) {
-        if ((avlTreeErrCode = this->_data[i].traverse(&this->_data[i], Multiset_avlTreeTraverserF))) {
+        if ((
+            avlTreeErrCode = this->_data[i].traverse(&this->_data[i], &layeredExternalData, Multiset_avlTreeTraverserF)
+        )) {
             return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
         }
     }
-
-    multisetTraverserF = NULL;
 
     return MULTISET_E_OK;
 }
@@ -178,7 +243,6 @@ static MultisetErrCode Multiset_traverse(Multiset *this, MultisetTraverserF trav
 
 static MultisetErrCode Multiset_clear(Multiset *this) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
-
 
     AvlTreeErrCode avlTreeErrCode;
 
@@ -190,5 +254,16 @@ static MultisetErrCode Multiset_clear(Multiset *this) {
         }
     }
 
+    this->itemsCount = 0;
+    this->uniqueItemsCount = 0;
+
+    return MULTISET_E_OK;
+}
+
+
+/*-------------------------------------------------- Get Statistics --------------------------------------------------*/
+
+// TODO : Implement Multiset_getStatistics(...)
+static MultisetErrCode Multiset_getStatistics(Multiset *this, MultisetStats *stats) {
     return MULTISET_E_OK;
 }
