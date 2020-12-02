@@ -2,8 +2,6 @@
 
 #include "avl-tree-impl.c"
 
-#include <stdlib.h>
-
 
 /*--------------------------------- Memory Management Interface on the Stack and Heap --------------------------------*/
 
@@ -19,14 +17,14 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
     avlTree->_freeF = freeF;
 
     // Add implementation
-    avlTree->find = AvlTree_find;
-    avlTree->findClosest = AvlTree_findClosest;
-    avlTree->prev = AvlTree_prev;
-    avlTree->next = AvlTree_next;
-    avlTree->insert = AvlTree_insert;
-    avlTree->insertTimes = AvlTree_insertTimes;
-    avlTree->delete = AvlTree_delete;
-    avlTree->deleteWithDuplicates = AvlTree_deleteWithDuplicates;
+    avlTree->findItem = AvlTree_findItem;
+    avlTree->findClosestItem = AvlTree_findClosestItem;
+    avlTree->prevNode = AvlTree_prevNode;
+    avlTree->nextNode = AvlTree_nextNode;
+    avlTree->addItem = AvlTree_addItem;
+    avlTree->addItemTimes = AvlTree_addItemTimes;
+    avlTree->removeItem = AvlTree_removeItem;
+    avlTree->removeItemWithCopies = AvlTree_removeItemWithCopies;
 
     avlTree->traverse = AvlTree_traverse;
     avlTree->clear = AvlTree_clear;
@@ -54,7 +52,9 @@ AvlTreeErrCode AvlTree_allocAvlTree(AvlTree **pAvlTree, AvlTreeItemCompF compF, 
 
 
     *pAvlTree = malloc(sizeof **pAvlTree);
-    if (*pAvlTree == NULL) return AVL_TREE_E_MEM_ALLOC;
+    if (*pAvlTree == NULL) {
+        return AVL_TREE_E_MEM_ALLOC;
+    }
 
     return AvlTree_initAvlTree(*pAvlTree, compF, freeF);
 }
@@ -66,7 +66,6 @@ AvlTreeErrCode AvlTree_freeAvlTree(AvlTree **pAvlTree) {
     AvlTree_eraseAvlTree(*pAvlTree);
 
     free(*pAvlTree);
-
     *pAvlTree = NULL;
 
     return AVL_TREE_E_OK;

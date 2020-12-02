@@ -23,10 +23,10 @@ typedef int (*AvlTreeItemCompF)(void *itemA, void *itemB);
 typedef void (*AvlTreeItemFreeF)(void *item);
 
 
+typedef void (*AvlTreeTraverserF)(void *externalData, AvlTreeNode *node);
+
+
 /*----------------------------------------------------- AVL Tree -----------------------------------------------------*/
-
-typedef void (*AvlTreeTraverserF)(AvlTreeNode *node);
-
 
 typedef struct avl_tree_t AvlTree;
 
@@ -37,27 +37,31 @@ struct avl_tree_t {
 
     AvlTreeItemFreeF _freeF;
 
+    size_t itemsCount;
+
+    size_t uniqueItemsCount;
+
 
     // AVL Tree Interface
 
-    AvlTreeErrCode (*find)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
+    AvlTreeErrCode (*findItem)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
 
-    AvlTreeErrCode (*findClosest)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
+    AvlTreeErrCode (*findClosestItem)(AvlTree *this, void *item, AvlTreeNode **pItemNode);
 
-    AvlTreeErrCode (*prev)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode);
+    AvlTreeErrCode (*prevNode)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode);
 
-    AvlTreeErrCode (*next)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode);
+    AvlTreeErrCode (*nextNode)(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode);
 
-    AvlTreeErrCode (*insert)(AvlTree *this, void *item, AvlTreeNode **pNewNode);
+    AvlTreeErrCode (*addItem)(AvlTree *this, void *item, AvlTreeNode **pNewNode);
 
-    AvlTreeErrCode (*insertTimes)(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode);
+    AvlTreeErrCode (*addItemTimes)(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode);
 
-    AvlTreeErrCode (*delete)(AvlTree *this, void *item);
+    AvlTreeErrCode (*removeItem)(AvlTree *this, void *item);
 
-    AvlTreeErrCode (*deleteWithDuplicates)(AvlTree *this, void *item);
+    AvlTreeErrCode (*removeItemWithCopies)(AvlTree *this, void *item);
 
 
-    AvlTreeErrCode (*traverse)(AvlTree *this, AvlTreeTraverserF traverserF);
+    AvlTreeErrCode (*traverse)(AvlTree *this, void *externalData, AvlTreeTraverserF traverserF);
 
     AvlTreeErrCode (*clear)(AvlTree *this);
 };

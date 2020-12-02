@@ -6,13 +6,19 @@
 
 /*------------------------------------------------------- Utils ------------------------------------------------------*/
 
-static AvlTreeErrCode AvlTree_findMin(AvlTree *this, AvlTreeNode **pMinItemNode) {
+static inline size_t AvlTree_maxSizeT(size_t a, size_t b) { return a < b ? b : a; }
+
+static inline size_t AvlTree_getNodeHeight(AvlTreeNode *node) { return node != NULL ? node->height : 0; }
+
+
+/*------------------------------------------------ Find Min & Max Item -----------------------------------------------*/
+
+static AvlTreeErrCode AvlTree_findMinItem(AvlTree *this, AvlTreeNode **pMinItemNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (pMinItemNode == NULL) return AVL_TREE_E_NULL_ARG;
 
 
     AvlTreeNode *node = this->_tree;
-
     if (node != NULL) while (node->left != NULL) node = node->left;
 
     *pMinItemNode = node;
@@ -20,13 +26,12 @@ static AvlTreeErrCode AvlTree_findMin(AvlTree *this, AvlTreeNode **pMinItemNode)
     return AVL_TREE_E_OK;
 }
 
-static AvlTreeErrCode AvlTree_findMax(AvlTree *this, AvlTreeNode **pMaxItemNode) {
+static AvlTreeErrCode AvlTree_findMaxItem(AvlTree *this, AvlTreeNode **pMaxItemNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (pMaxItemNode == NULL) return AVL_TREE_E_NULL_ARG;
 
 
     AvlTreeNode *node = this->_tree;
-
     if (node != NULL) while (node->right != NULL) node = node->right;
 
     *pMaxItemNode = node;
@@ -35,10 +40,7 @@ static AvlTreeErrCode AvlTree_findMax(AvlTree *this, AvlTreeNode **pMaxItemNode)
 }
 
 
-static inline size_t AvlTree_maxSizeT(size_t a, size_t b) { return a < b ? b : a; }
-
-static inline size_t AvlTree_getNodeHeight(AvlTreeNode *node) { return node != NULL ? node->height : 0; }
-
+/*------------------------------------------------- Balance AVL Tree -------------------------------------------------*/
 
 static void AvlTree_updateHeight(AvlTreeNode *node) {
     if (node == NULL) return;
@@ -46,31 +48,37 @@ static void AvlTree_updateHeight(AvlTreeNode *node) {
     AvlTree_updateHeight(node->parent);
 }
 
+// TODO : Implement AvlTree_balance(...)
+static void AvlTree_balance(AvlTreeNode *node) {}
 
-/*------------------------------------------------- Find Item's Node -------------------------------------------------*/
 
-static AvlTreeErrCode AvlTree_find(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------ AVL Tree Interface ------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------- Find Item ----------------------------------------------------*/
+
+static AvlTreeErrCode AvlTree_findItem(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
     if (pItemNode == NULL) return AVL_TREE_E_NULL_ARG;
 
+    AvlTreeErrCode errCode;
 
-    AvlTreeNode *node = this->_tree;
 
-    while (node != NULL) {
-        int comp = this->_compF(item, node->item);
-
-        if (comp < 0) node = node->left;
-        else if (comp == 0) break;
-        else node = node->right;
+    AvlTreeNode *node;
+    if ((errCode = this->findClosestItem(this, item, &node))) {
+        return errCode;
     }
 
-    *pItemNode = node;
+    *pItemNode = node != NULL && this->_compF(item, node->item) == 0 ? node : NULL;
 
     return AVL_TREE_E_OK;
 }
 
-static AvlTreeErrCode AvlTree_findClosest(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
+static AvlTreeErrCode AvlTree_findClosestItem(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
     if (pItemNode == NULL) return AVL_TREE_E_NULL_ARG;
@@ -100,14 +108,14 @@ static AvlTreeErrCode AvlTree_findClosest(AvlTree *this, void *item, AvlTreeNode
 
 /*----------------------------------------------- Previous & Next Node -----------------------------------------------*/
 
-static AvlTreeErrCode AvlTree_prev(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode) {
+static AvlTreeErrCode AvlTree_prevNode(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (node == NULL) return AVL_TREE_E_NULL_ARG;
     if (pPrevNode == NULL) return AVL_TREE_E_NULL_ARG;
 
 
     AvlTreeNode *minItemNode;
-    AvlTree_findMin(this, &minItemNode);
+    AvlTree_findMinItem(this, &minItemNode);
 
     if (this->_tree == NULL || minItemNode == node) {
         node = NULL;
@@ -124,14 +132,14 @@ static AvlTreeErrCode AvlTree_prev(AvlTree *this, AvlTreeNode *node, AvlTreeNode
     return AVL_TREE_E_OK;
 }
 
-static AvlTreeErrCode AvlTree_next(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode) {
+static AvlTreeErrCode AvlTree_nextNode(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (node == NULL) return AVL_TREE_E_NULL_ARG;
     if (pNextNode == NULL) return AVL_TREE_E_NULL_ARG;
 
 
     AvlTreeNode *maxItemNode;
-    AvlTree_findMax(this, &maxItemNode);
+    AvlTree_findMaxItem(this, &maxItemNode);
 
     if (this->_tree == NULL || maxItemNode == node) {
         node = NULL;
@@ -149,74 +157,41 @@ static AvlTreeErrCode AvlTree_next(AvlTree *this, AvlTreeNode *node, AvlTreeNode
 }
 
 
-/*---------------------------------------------------- Insert Item ---------------------------------------------------*/
+/*----------------------------------------------------- Add Item -----------------------------------------------------*/
 
-static AvlTreeErrCode AvlTree_insert(AvlTree *this, void *item, AvlTreeNode **pNewNode) {
+static AvlTreeErrCode AvlTree_addItem(AvlTree *this, void *item, AvlTreeNode **pNewNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
-    // Possibly optional
-    // if (pNewNode == NULL) return AVL_TREE_E_NULL_ARG;
-
 
     AvlTreeErrCode errCode;
 
-    AvlTreeNode *node;
-    if ((errCode = this->findClosest(this, item, &node))) return errCode;
 
-    if (node == NULL) {
-        this->_tree = malloc(sizeof(AvlTreeNode));
-        if (this->_tree == NULL) return AVL_TREE_E_MEM_ALLOC;
-
-        *this->_tree = (AvlTreeNode) {item, .count = 1, .height = 1};
-
-        node = this->_tree;
-    } else {
-        int comp = this->_compF(item, node->item);
-
-        if (comp < 0) {
-            node->left = malloc(sizeof(AvlTreeNode));
-            if (node->left == NULL) return AVL_TREE_E_MEM_ALLOC;
-
-            *node->left = (AvlTreeNode) {item, .count = 1, .height = 1, .parent = node};
-
-            node = node->left;
-        } else if (comp == 0) {
-            ++node->count;
-            if (this->_freeF != NULL) this->_freeF(item);
-        } else {
-            node->right = malloc(sizeof(AvlTreeNode));
-            if (node->right == NULL) return AVL_TREE_E_MEM_ALLOC;
-
-            *node->right = (AvlTreeNode) {item, .count = 1, .height = 1, .parent = node};
-
-            node = node->right;
-        }
+    if ((errCode = this->addItemTimes(this, item, 1, pNewNode))) {
+        return errCode;
     }
-
-    AvlTree_updateHeight(node);
-
-    // TODO : Implement balance
-    // AvlTree_balance(node);
 
     return AVL_TREE_E_OK;
 }
 
-static AvlTreeErrCode AvlTree_insertTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
+// TODO : Rewrite AvlTree_addItemTimes(...)
+static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
     if (times == 0) return AVL_TREE_E_OTHER;
-    // Possibly optional
-    // if (pNewNode == NULL) return AVL_TREE_E_NULL_ARG;
-
 
     AvlTreeErrCode errCode;
 
+
     AvlTreeNode *node;
-    if ((errCode = this->findClosest(this, item, &node))) return errCode;
+    if ((errCode = this->findClosestItem(this, item, &node))) {
+        return errCode;
+    }
 
     if (node == NULL) {
         this->_tree = malloc(sizeof(AvlTreeNode));
-        if (this->_tree == NULL) return AVL_TREE_E_MEM_ALLOC;
+        if (this->_tree == NULL) {
+            return AVL_TREE_E_MEM_ALLOC;
+        }
 
         *this->_tree = (AvlTreeNode) {item, .count = times, .height = 1};
 
@@ -244,18 +219,20 @@ static AvlTreeErrCode AvlTree_insertTimes(AvlTree *this, void *item, size_t time
         }
     }
 
-    AvlTree_updateHeight(node);
+    if (pNewNode != NULL) *pNewNode = node;
 
-    // TODO : Implement balance
-    // AvlTree_balance(node);
+
+    AvlTree_updateHeight(node);
+    AvlTree_balance(node);
 
     return AVL_TREE_E_OK;
 }
 
 
-/*---------------------------------------------------- Delete Item ---------------------------------------------------*/
+/*---------------------------------------------------- Remove Item ---------------------------------------------------*/
 
-static AvlTreeErrCode AvlTree_deleteNode(AvlTree *this, AvlTreeNode *node) {
+// TODO : Rewrite AvlTree_removeNode(...)
+static AvlTreeErrCode AvlTree_removeNode(AvlTree *this, AvlTreeNode *node) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
 
 
@@ -290,67 +267,74 @@ static AvlTreeErrCode AvlTree_deleteNode(AvlTree *this, AvlTreeNode *node) {
     if (this->_freeF != NULL) this->_freeF(node->item);
     free(node);
 
+
     AvlTree_updateHeight(replace);
-
-    // TODO : Implement balance
-    // AvlTree_balance(replace);
+    AvlTree_balance(replace);
 
     return AVL_TREE_E_OK;
 }
 
 
-static AvlTreeErrCode AvlTree_delete(AvlTree *this, void *item) {
+static AvlTreeErrCode AvlTree_removeItem(AvlTree *this, void *item) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
 
     AvlTreeErrCode errCode;
 
 
     AvlTreeNode *node;
-    if ((errCode = this->find(this, item, &node))) return errCode;
+    if ((errCode = this->findItem(this, item, &node))) {
+        return errCode;
+    }
 
-    if (node == NULL) return AVL_TREE_E_OK;
-
-    if (node->count == 1) return AvlTree_deleteNode(this, node);
-
-    --node->count;
+    if (node != NULL && node->count > 1) {
+        --node->count;
+        --this->itemsCount;
+    } else {
+        --this->itemsCount;
+        --this->uniqueItemsCount;
+        return AvlTree_removeNode(this, node);
+    }
 
     return AVL_TREE_E_OK;
 }
 
-static AvlTreeErrCode AvlTree_deleteWithDuplicates(AvlTree *this, void *item) {
+static AvlTreeErrCode AvlTree_removeItemWithCopies(AvlTree *this, void *item) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
 
     AvlTreeErrCode errCode;
 
 
     AvlTreeNode *node;
-    if ((errCode = this->find(this, item, &node))) return errCode;
+    if ((errCode = this->findItem(this, item, &node))) {
+        return errCode;
+    }
 
-    if (node == NULL) return AVL_TREE_E_OK;
+    if (node != NULL) {
+        this->itemsCount -= node->count;
+        --this->uniqueItemsCount;
+    }
 
-    return AvlTree_deleteNode(this, node);
+    return AvlTree_removeNode(this, node);
 }
 
 
-/*--------------------------------------------- Traverse through AVL Tree --------------------------------------------*/
+/*--------------------------------------------- Traverse Through AVL Tree --------------------------------------------*/
 
 // TODO : Implement a non-recursive DFS
-static void AvlTree_dfs(AvlTreeNode *node, AvlTreeTraverserF traverserF) {
-    if (node->left != NULL) AvlTree_dfs(node->left, traverserF);
-    traverserF(node);
-    if (node->right != NULL) AvlTree_dfs(node->right, traverserF);
+static void AvlTree_dfs(AvlTreeNode *node, void *externalData, AvlTreeTraverserF traverserF) {
+    if (node->left != NULL) AvlTree_dfs(node->left, externalData, traverserF);
+    traverserF(externalData, node);
+    if (node->right != NULL) AvlTree_dfs(node->right, externalData, traverserF);
 }
 
-static AvlTreeErrCode AvlTree_traverse(AvlTree *this, AvlTreeTraverserF traverserF) {
+static AvlTreeErrCode AvlTree_traverse(AvlTree *this, void *externalData, AvlTreeTraverserF traverserF) {
     if (this == NULL) return AVL_TREE_E_NULL_THIS;
     if (traverserF == NULL) return AVL_TREE_E_NULL_ARG;
 
 
-    if (this->_tree != NULL) AvlTree_dfs(this->_tree, traverserF);
+    if (this->_tree != NULL) AvlTree_dfs(this->_tree, externalData, traverserF);
 
     return AVL_TREE_E_OK;
 }
@@ -375,6 +359,9 @@ static AvlTreeErrCode AvlTree_clear(AvlTree *this) {
         AvlTree_recursiveNodeFree(this->_tree, this->_freeF);
         this->_tree = NULL;
     }
+
+    this->itemsCount = 0;
+    this->uniqueItemsCount = 0;
 
     return AVL_TREE_E_OK;
 }
