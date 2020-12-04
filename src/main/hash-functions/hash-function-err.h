@@ -6,6 +6,7 @@
 
 typedef enum {
     HASH_FUNC_E_OK,
+    HASH_FUNC_E_NULL_ARG,
     HASH_FUNC_E_MEM_ALLOC,
     HASH_FUNC_E_OTHER,
 } HashFuncErrCode;
