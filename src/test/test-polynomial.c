@@ -12,7 +12,6 @@
 
 /*------------------------------------------- Polynomial - ErrCodes --------------------------------------------------*/
 
-
 void TestPolynomial_NullMessagePtr_NullArgError(CuTest *tc) {
     size_t size = 1;
     uint64_t hash = 0;
@@ -25,6 +24,7 @@ void TestPolynomial_NullHashPtr_NullArgError(CuTest *tc) {
     CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculatePolynomialHash(message, size, NULL));
 }
 
+
 /*---------------------------------------- Polynomial - CalculateHash ------------------------------------------------*/
 
 uint64_t calculateExpectedValue(const char *message, size_t size) {
@@ -35,7 +35,7 @@ uint64_t calculateExpectedValue(const char *message, size_t size) {
     return expectedValue;
 }
 
-void checkHash(const char *message, size_t size, uint64_t expectedValue, CuTest *tc) {
+void checkPolynomialHash(const char *message, size_t size, uint64_t expectedValue, CuTest *tc) {
     uint64_t hash = 0;
     CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculatePolynomialHash(message, size, &hash));
     CuAssertIntEquals(tc, expectedValue, hash);
@@ -52,25 +52,25 @@ void TestPolynomial_JunkInHashContainer_CalculateHash(CuTest *tc) {
 void TestPolynomial_EmptyCStr_CalculateZero(CuTest *tc) {
     char *message = "";
     size_t size = 0;
-    checkHash(message, size, 0, tc);
+    checkPolynomialHash(message, size, 0, tc);
 }
 
 void TestPolynomial_ShortCStr_CalculateHash(CuTest *tc) {
     char *message = "abc";
     size_t size = strlen(message);
-    checkHash(message, size, calculateExpectedValue(message, size), tc);
+    checkPolynomialHash(message, size, calculateExpectedValue(message, size), tc);
 }
 
 void TestPolynomial_LongCStr_CalculateHash(CuTest *tc) {
     char *message = "zzzzzzzzzzzzzz";
     size_t size = strlen(message);
-    checkHash(message, size, calculateExpectedValue(message, size), tc);
+    checkPolynomialHash(message, size, calculateExpectedValue(message, size), tc);
 }
 
 void TestPolynomial_NulInTheMiddle_CalculateHash(CuTest *tc) {
     char message[3] = {'a', '\0', 'b'};
     size_t size = 3;
-    checkHash(message, size, calculateExpectedValue(message, size), tc);
+    checkPolynomialHash(message, size, calculateExpectedValue(message, size), tc);
 }
 
 void TestPolynomial_AllCharsUsed_CalculateHash(CuTest *tc) {
@@ -79,7 +79,7 @@ void TestPolynomial_AllCharsUsed_CalculateHash(CuTest *tc) {
     for (size_t i = 0; i < size; i++) {
         message[i] = i;
     }
-    checkHash(message, size, calculateExpectedValue(message, size), tc);
+    checkPolynomialHash(message, size, calculateExpectedValue(message, size), tc);
 }
 
 
