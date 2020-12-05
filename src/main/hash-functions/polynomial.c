@@ -8,6 +8,7 @@ HashFuncErrCode calculatePolynomialHash(const char *message, size_t size, uint64
     if (message == NULL || hash == NULL) {
         return HASH_FUNC_E_NULL_ARG;
     }
+    *hash = 0;
     for (size_t i = 0; i < size; i++) {
         *hash = *hash * MULT_PRIME + message[i];
     }
