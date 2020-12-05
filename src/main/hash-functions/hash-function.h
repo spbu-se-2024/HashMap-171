@@ -7,9 +7,6 @@
 #include <stdint.h>
 
 
-typedef HashFuncErrCode (*HashFunction)(const char *message, size_t size, uint32_t *hash);
-
-
 HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash);
 
 HashFuncErrCode calculatePolynomialHash(const char *message, size_t size, uint32_t *hash);
