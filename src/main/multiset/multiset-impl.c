@@ -4,6 +4,20 @@
 
 /*------------------------------------------------------- Utils ------------------------------------------------------*/
 
+static MultisetErrCode Multiset_convertHashFuncErrCode(HashFuncErrCode hashFuncErrCode) {
+    switch (hashFuncErrCode) {
+        case HASH_FUNC_E_OK:
+            return MULTISET_E_OK;
+        case HASH_FUNC_E_MEM_ALLOC:
+            return MULTISET_E_MEM_ALLOC;
+        case HASH_FUNC_E_NULL_ARG:
+            return MULTISET_E_NULL_ARG;
+        case HASH_FUNC_E_OTHER:
+        default:
+            return MULTISET_E_OTHER;
+    }
+}
+
 static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrCode) {
     switch (avlTreeErrCode) {
         case AVL_TREE_E_OK:
@@ -23,36 +37,45 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 /*------------------------------------------------- Hash conversions -------------------------------------------------*/
 
 // TODO : Implement convertMd5HashToSizeT(...)
-static size_t convertMd5HashToSizeT(MultisetItem item) {
-    return 0;
+static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
+    return MULTISET_E_OK;
 }
 
 // TODO : Implement convertPolynomialHashToSizeT(...)
-static size_t convertPolynomialHashToSizeT(MultisetItem item) {
-    return 0;
+static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
+    return MULTISET_E_OK;
 }
 
 // TODO : Implement convertSha1HashToSizeT(...)
-static size_t convertSha1HashToSizeT(MultisetItem item) {
-    return 0;
+static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) {
+    return MULTISET_E_OK;
 }
 
 
-static size_t getConvertedHash(MultisetItem item, MultisetHashFuncLabel multisetHashFuncLabel) {
-    switch (multisetHashFuncLabel) {
+static MultisetErrCode Multiset_getItemIndex(MultisetItem item, MultisetConfig config, size_t *index) {
+    MultisetErrCode errCode;
+
+    size_t _index;
+
+    switch (config.hashFuncLabel) {
         case MULTISET_HASH_FUNC_LABEL_MD5:
-            return convertMd5HashToSizeT(item);
+            errCode = convertMd5HashToSizeT(item, &_index);
+            break;
         case MULTISET_HASH_FUNC_LABEL_POLYNOMIAL:
-            return convertPolynomialHashToSizeT(item);
+            errCode = convertPolynomialHashToSizeT(item, &_index);
+            break;
         case MULTISET_HASH_FUNC_LABEL_SHA_1:
-            return convertSha1HashToSizeT(item);
+            errCode = convertSha1HashToSizeT(item, &_index);
+            break;
         default:
-            return 0;
+            return MULTISET_E_OTHER;
     }
-}
 
-static inline size_t Multiset_getItemIndex(MultisetItem item, MultisetConfig config) {
-    return getConvertedHash(item, config.hashFuncLabel) % config.size;
+    if (errCode) return errCode;
+
+    *index = _index % config.size;
+
+    return MULTISET_E_OK;
 }
 
 

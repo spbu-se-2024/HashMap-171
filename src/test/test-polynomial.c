@@ -5,63 +5,82 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef HASH_ELEMENTS_USED
-#define HASH_ELEMENTS_USED 2
-#endif
 #ifndef MULT_PRIME
-#define MULT_PRIME 257
+#define MULT_PRIME 257 // A const prime by which chars are multiplied in the polynomial hash function
 #endif
 
 
-/*------------------------------------------ Polynomial - Int - Calculate --------------------------------------------*/
+/*------------------------------------------- Polynomial - ErrCodes --------------------------------------------------*/
 
-uint64_t ConvertHash(const uint32_t *hash) {
-    uint64_t ConvertedHash = 0;
-    for (unsigned int i = 0; i < HASH_ELEMENTS_USED; i++) {
-        ConvertedHash = (ConvertedHash << 32u) | hash[i];
-    }
-    return ConvertedHash;
+
+void TestPolynomial_NullMessagePtr_NullArgError(CuTest *tc) {
+    size_t size = 1;
+    uint64_t hash = 0;
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculatePolynomialHash(NULL, size, &hash));
 }
 
-void CheckHash(const char *message, size_t size, uint64_t ExpectedValue, CuTest *tc) {
-    uint32_t hash[HASH_ELEMENTS_USED + 2] = {0};
-    calculatePolynomialHash(message, size, &(hash[1]));
-    CuAssertIntEquals(tc, 0, hash[0]);
-    CuAssertIntEquals(tc, ExpectedValue, ConvertHash(&(hash[1])));
-    CuAssertIntEquals(tc, 0, hash[HASH_ELEMENTS_USED + 1]);
-}
-
-void TestPolynomial_EmptyStr_ReturnZero(CuTest *tc) {
-    char *message = "";
-    size_t size = 0;
-    CheckHash(message, size, 0, tc);
-}
-
-void TestPolynomial_ShortStr_ReturnHash(CuTest *tc) {
+void TestPolynomial_NullHashPtr_NullArgError(CuTest *tc) {
     char *message = "abc";
     size_t size = strlen(message);
-    uint64_t ExpectedValue = 0;
-    for (unsigned int i = 0; i < size; i++) {
-        ExpectedValue = ExpectedValue * MULT_PRIME + message[i];
-    }
-    CheckHash(message, size, ExpectedValue, tc);
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculatePolynomialHash(message, size, NULL));
 }
 
-void TestPolynomial_LongStr_ReturnHash(CuTest *tc) {
+/*---------------------------------------- Polynomial - CalculateHash ------------------------------------------------*/
+
+uint64_t calculateExpectedValue(const char *message, size_t size) {
+    uint64_t expectedValue = 0;
+    for (size_t i = 0; i < size; i++) {
+        expectedValue = expectedValue * MULT_PRIME + message[i];
+    }
+    return expectedValue;
+}
+
+void checkHash(const char *message, size_t size, uint64_t expectedValue, CuTest *tc) {
+    uint64_t hash = 0;
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculatePolynomialHash(message, size, &hash));
+    CuAssertIntEquals(tc, expectedValue, hash);
+}
+
+void TestPolynomial_JunkInHashContainer_CalculateHash(CuTest *tc) {
+    char *message = "abc";
+    size_t size = strlen(message);
+    uint64_t hash = 123456789;
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculatePolynomialHash(message, size, &hash));
+    CuAssertIntEquals(tc, calculateExpectedValue(message, size), hash);
+}
+
+void TestPolynomial_EmptyCStr_CalculateZero(CuTest *tc) {
+    char *message = "";
+    size_t size = 0;
+    checkHash(message, size, 0, tc);
+}
+
+void TestPolynomial_ShortCStr_CalculateHash(CuTest *tc) {
+    char *message = "abc";
+    size_t size = strlen(message);
+    checkHash(message, size, calculateExpectedValue(message, size), tc);
+}
+
+void TestPolynomial_LongCStr_CalculateHash(CuTest *tc) {
     char *message = "zzzzzzzzzzzzzz";
     size_t size = strlen(message);
-    uint64_t ExpectedValue = 0;
-    for (unsigned int i = 0; i < size; i++) {
-        ExpectedValue = ExpectedValue * MULT_PRIME + message[i];
-    }
-    CheckHash(message, size, ExpectedValue, tc);
+    checkHash(message, size, calculateExpectedValue(message, size), tc);
 }
 
+void TestPolynomial_NulInTheMiddle_CalculateHash(CuTest *tc) {
+    char message[3] = {'a', '\0', 'b'};
+    size_t size = 3;
+    checkHash(message, size, calculateExpectedValue(message, size), tc);
+}
 
-/*-------------------------------------------------- Section Name 2 --------------------------------------------------*/
-
-
-/*-------------------------------------------------- Section Name 3 --------------------------------------------------*/
+void TestPolynomial_AllCharsUsed_CalculateHash(CuTest *tc) {
+    size_t size = 256;
+    char message[size];
+    for (size_t i = 0; i < size; i++) {
+        message[i] = i;
+    }
+    checkHash(message, size, calculateExpectedValue(message, size), tc);
+}
 
 
 /*------------------------------------------------------- MAIN -------------------------------------------------------*/
@@ -69,9 +88,16 @@ void TestPolynomial_LongStr_ReturnHash(CuTest *tc) {
 CuSuite *PolynomialGetSuite() {
     CuSuite *suite = CuSuiteNew();
 
-    SUITE_ADD_TEST(suite, TestPolynomial_EmptyStr_ReturnZero);
-    SUITE_ADD_TEST(suite, TestPolynomial_ShortStr_ReturnHash);
-    SUITE_ADD_TEST(suite, TestPolynomial_LongStr_ReturnHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_NullMessagePtr_NullArgError);
+    SUITE_ADD_TEST(suite, TestPolynomial_NullHashPtr_NullArgError);
+    SUITE_ADD_TEST(suite, TestPolynomial_JunkInHashContainer_CalculateHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_EmptyCStr_CalculateZero);
+    SUITE_ADD_TEST(suite, TestPolynomial_ShortCStr_CalculateHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_LongCStr_CalculateHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_NulInTheMiddle_CalculateHash);
+    SUITE_ADD_TEST(suite, TestPolynomial_AllCharsUsed_CalculateHash);
 
     return suite;
 }
+
+#undef MULT_PRIME
