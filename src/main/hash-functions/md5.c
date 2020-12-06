@@ -9,7 +9,7 @@
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
 #define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint8_t *hash) {
+HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
     if(message == NULL || hash == NULL) return HASH_FUNC_E_NULL_ARG;
 
     // Pre-processing
@@ -88,23 +88,24 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint8_t *hash
         d0 += d;
     }
 
-    // uint8_t hash[16] BE
+    // uint32_t hash[4] BE
     uint8_t *p;
-    p = (uint8_t *) &a0;
-    for (int i = 0; i < 4; i++) hash[i] = p[i];
-    p = (uint8_t *) &b0;
-    for (int i = 0; i < 4; i++) hash[i + 4] = p[i];
-    p = (uint8_t *) &c0;
-    for (int i = 0; i < 4; i++) hash[i + 8] = p[i];
-    p = (uint8_t *) &d0;
-    for (int i = 0; i < 4; i++) hash[i + 12] = p[i];
+    p = (uint8_t *)&a0;
+    hash[0] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+    printf("%x ", hash[0]);
+    p = (uint8_t *)&b0;
+    hash[1] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+    p = (uint8_t *)&c0;
+    hash[2] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
+    p = (uint8_t *)&d0;
+    hash[3] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
 
     /* sample
-    unsigned int hash[16] = {0};
+    uint32_t hash[4] = {0};
     if (!MD5("", 0, hash)){
-        for (int i = 0; i < 16; i++)
-            printf("%2.2x", hash[i]); 
-        puts("");
+        for (int i = 0; i < 4; i++)
+            printf("%x", hash[i]);
+        puts(""); // d41d8cd98f00b204e9800998ecf8427e
     }
     */
 
