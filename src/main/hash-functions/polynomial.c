@@ -8,11 +8,11 @@ HashFuncErrCode calculatePolynomialHash(const char *message, size_t size, uint64
     if (message == NULL || hash == NULL) {
         return HASH_FUNC_E_NULL_ARG;
     }
-    uint64_t hashBuf = 0;
+    uint64_t tempHash = 0;
     for (size_t i = 0; i < size; i++) {
-        hashBuf = hashBuf * MULT_PRIME + message[i];
+        tempHash = tempHash * MULT_PRIME + message[i];
     }
-    *hash = hashBuf;
+    *hash = tempHash;
     return HASH_FUNC_E_OK;
 }
 
