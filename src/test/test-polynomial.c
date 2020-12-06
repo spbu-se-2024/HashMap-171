@@ -5,9 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef MULT_PRIME
 #define MULT_PRIME 257 // A const prime by which chars are multiplied in the polynomial hash function
-#endif
 
 
 /*------------------------------------------- Polynomial - ErrCodes --------------------------------------------------*/
