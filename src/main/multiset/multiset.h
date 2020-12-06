@@ -36,6 +36,7 @@ typedef struct {
     size_t itemsCount;
     size_t uniqueItemsCount;
     size_t maxCount;
+    const char *maxCountWord;
 } MultisetStats;
 
 
