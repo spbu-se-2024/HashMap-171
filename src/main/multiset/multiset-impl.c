@@ -334,7 +334,24 @@ static MultisetErrCode Multiset_clear(Multiset *this) {
 
 /*-------------------------------------------------- Get Statistics --------------------------------------------------*/
 
+static void getStatsMultisetTraverser(void *externalData, MultisetItem item, size_t count) {
+    MultisetStats *stats = (MultisetStats*)externalData;
+
+    if(count > stats->maxCount) {
+        stats->maxCount = count;
+        stats->maxCountWord = item;
+    }
+}
+
 // TODO : Implement Multiset_getStatistics(...)
 static MultisetErrCode Multiset_getStatistics(Multiset *this, MultisetStats *stats) {
+    if(this == NULL) return MULTISET_E_NULL_THIS;
+    if(stats == NULL) return MULTISET_E_NULL_ARG;
+
+    stats->config = this->_config;
+    stats->itemsCount = this->itemsCount;
+    stats->uniqueItemsCount = this->uniqueItemsCount;
+    this->traverse(this, stats, getStatsMultisetTraverser);
+
     return MULTISET_E_OK;
 }
