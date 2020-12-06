@@ -351,7 +351,7 @@ static MultisetErrCode Multiset_getStatistics(Multiset *this, MultisetStats *sta
     stats->config = this->_config;
     stats->itemsCount = this->itemsCount;
     stats->uniqueItemsCount = this->uniqueItemsCount;
-    this->traverse(this, &stats->maxCount, getStatsMultisetTraverser);
+    this->traverse(this, stats, getStatsMultisetTraverser);
 
     return MULTISET_E_OK;
 }
