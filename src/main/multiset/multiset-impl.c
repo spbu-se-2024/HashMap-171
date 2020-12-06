@@ -1,6 +1,8 @@
 #include "multiset.h"
 #include "../hash-functions/hash-function.h"
 
+#include <string.h>
+
 
 /*------------------------------------------------------- Utils ------------------------------------------------------*/
 
@@ -36,18 +38,48 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 
 /*------------------------------------------------- Hash conversions -------------------------------------------------*/
 
-// TODO : Implement convertMd5HashToSizeT(...)
 static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
+    HashFuncErrCode errCode;
+
+    uint32_t hash[4];
+    if ((errCode = calculateMd5Hash(item, strlen(item), hash))) {
+        return Multiset_convertHashFuncErrCode(errCode);
+    }
+
+    size_t _index = 0;
+    _index = (_index + hash[3] % SIZE_MAX) % SIZE_MAX;
+    _index = (_index + ((uint64_t) hash[2] << 32u) % SIZE_MAX) % SIZE_MAX;
+    *index = _index;
+
     return MULTISET_E_OK;
 }
 
-// TODO : Implement convertPolynomialHashToSizeT(...)
 static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
+    HashFuncErrCode errCode;
+
+    uint64_t hash;
+    if ((errCode = calculatePolynomialHash(item, strlen(item), &hash))) {
+        return Multiset_convertHashFuncErrCode(errCode);
+    }
+
+    *index = hash % SIZE_MAX;
+
     return MULTISET_E_OK;
 }
 
-// TODO : Implement convertSha1HashToSizeT(...)
 static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) {
+    HashFuncErrCode errCode;
+
+    uint32_t hash[5];
+    if ((errCode = calculateSha1Hash(item, strlen(item), hash))) {
+        return Multiset_convertHashFuncErrCode(errCode);
+    }
+
+    size_t _index = 0;
+    _index = (_index + hash[4] % SIZE_MAX) % SIZE_MAX;
+    _index = (_index + ((uint64_t) hash[3] << 32u) % SIZE_MAX) % SIZE_MAX;
+    *index = _index;
+
     return MULTISET_E_OK;
 }
 
@@ -110,10 +142,14 @@ static MultisetErrCode Multiset_countItem(Multiset *this, MultisetItem item, siz
     if (item == NULL) return MULTISET_E_NULL_ARG;
     if (itemCount == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode multisetErrCode;
     AvlTreeErrCode avlTreeErrCode;
 
 
-    size_t index = Multiset_getItemIndex(item, this->_config);
+    size_t index;
+    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
+        return multisetErrCode;
+    }
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
@@ -147,12 +183,16 @@ static MultisetErrCode Multiset_addItemTimes(Multiset *this, MultisetItem item, 
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode multisetErrCode;
     AvlTreeErrCode avlTreeErrCode;
 
 
     if (times == 0) return MULTISET_E_OK;
 
-    size_t index = Multiset_getItemIndex(item, this->_config);
+    size_t index;
+    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
+        return multisetErrCode;
+    }
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
@@ -173,10 +213,14 @@ static MultisetErrCode Multiset_removeItem(Multiset *this, MultisetItem item) {
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode multisetErrCode;
     AvlTreeErrCode avlTreeErrCode;
 
 
-    size_t index = Multiset_getItemIndex(item, this->_config);
+    size_t index;
+    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
+        return multisetErrCode;
+    }
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
@@ -202,10 +246,14 @@ static MultisetErrCode Multiset_removeItemWithCopies(Multiset *this, MultisetIte
     if (this == NULL) return MULTISET_E_NULL_THIS;
     if (item == NULL) return MULTISET_E_NULL_ARG;
 
+    MultisetErrCode multisetErrCode;
     AvlTreeErrCode avlTreeErrCode;
 
 
-    size_t index = Multiset_getItemIndex(item, this->_config);
+    size_t index;
+    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
+        return multisetErrCode;
+    }
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
