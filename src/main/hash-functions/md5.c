@@ -9,7 +9,7 @@
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
 #define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
 
-HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
+HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint8_t *hash) {
     if(message == NULL || hash == NULL) return HASH_FUNC_E_NULL_ARG;
 
     // Pre-processing
@@ -103,7 +103,7 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
     unsigned int hash[16] = {0};
     if (!MD5("", 0, hash)){
         for (int i = 0; i < 16; i++)
-            printf("%2.2x", hash[i]); // выведет хеш в правильном виде
+            printf("%2.2x", hash[i]); 
         puts("");
     }
     */
