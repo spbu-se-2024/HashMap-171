@@ -38,7 +38,7 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 
 /*------------------------------------------------- Hash conversions -------------------------------------------------*/
 
-static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
+static MultisetErrCode Multiset_convertMd5HashToSizeT(MultisetItem item, size_t *index) {
     uint32_t hash[4];
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
         calculateMd5Hash(item, strlen(item), hash)
@@ -52,7 +52,7 @@ static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
     return MULTISET_E_OK;
 }
 
-static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
+static MultisetErrCode Multiset_convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
     uint64_t hash;
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
         calculatePolynomialHash(item, strlen(item), &hash)
@@ -63,7 +63,7 @@ static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *i
     return MULTISET_E_OK;
 }
 
-static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) {
+static MultisetErrCode Multiset_convertSha1HashToSizeT(MultisetItem item, size_t *index) {
     uint32_t hash[5];
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
         calculateSha1Hash(item, strlen(item), hash)
@@ -83,13 +83,13 @@ static MultisetErrCode Multiset_getItemIndex(MultisetItem item, MultisetConfig c
 
     switch (config.hashFuncLabel) {
         case MULTISET_HASH_FUNC_LABEL_MD5:
-            Multiset_stopRunOnBadErrCode(convertMd5HashToSizeT(item, &_index),);
+            Multiset_stopRunOnBadErrCode(Multiset_convertMd5HashToSizeT(item, &_index),);
             break;
         case MULTISET_HASH_FUNC_LABEL_POLYNOMIAL:
-            Multiset_stopRunOnBadErrCode(convertPolynomialHashToSizeT(item, &_index),);
+            Multiset_stopRunOnBadErrCode(Multiset_convertPolynomialHashToSizeT(item, &_index),);
             break;
         case MULTISET_HASH_FUNC_LABEL_SHA_1:
-            Multiset_stopRunOnBadErrCode(convertSha1HashToSizeT(item, &_index),);
+            Multiset_stopRunOnBadErrCode(Multiset_convertSha1HashToSizeT(item, &_index),);
             break;
         default:
             return MULTISET_E_OTHER;
@@ -240,13 +240,13 @@ static MultisetErrCode Multiset_removeItemWithCopies(Multiset *this, MultisetIte
 
 /*----------------------------------------------------- Traverse -----------------------------------------------------*/
 
-struct layered_external_data_t {
+typedef struct {
     void *externalData;
     MultisetTraverserF multisetTraverserF;
-};
+} LayeredExternalData;
 
 static void Multiset_avlTreeTraverserF(void *externalData, AvlTreeNode *node) {
-    struct layered_external_data_t *layeredExternalData = externalData;
+    LayeredExternalData *layeredExternalData = externalData;
     layeredExternalData->multisetTraverserF(layeredExternalData->externalData, node->item, node->count);
 }
 
@@ -255,7 +255,7 @@ static MultisetErrCode Multiset_traverse(Multiset *this, void *externalData, Mul
     Multiset_autoprintErrAndStopRunIf(traverser == NULL, MULTISET_E_NULL_ARG,);
 
 
-    struct layered_external_data_t layeredExternalData = {externalData, traverser};
+    LayeredExternalData layeredExternalData = {externalData, traverser};
 
     const size_t multisetSize = this->_config.size;
     for (size_t i = 0; i < multisetSize; i++) {
