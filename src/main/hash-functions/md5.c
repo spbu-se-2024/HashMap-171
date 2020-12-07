@@ -89,25 +89,10 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
     }
 
     // uint32_t hash[4] BE
-    uint8_t *p;
-    p = (uint8_t *)&a0;
-    hash[0] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-    printf("%x ", hash[0]);
-    p = (uint8_t *)&b0;
-    hash[1] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-    p = (uint8_t *)&c0;
-    hash[2] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-    p = (uint8_t *)&d0;
-    hash[3] = (p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-
-    /* sample
-    uint32_t hash[4] = {0};
-    if (!MD5("", 0, hash)){
-        for (int i = 0; i < 4; i++)
-            printf("%x", hash[i]);
-        puts(""); // d41d8cd98f00b204e9800998ecf8427e
-    }
-    */
+    hash[0] = a0 << (uint32_t)24 | (a0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (a0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | a0 >> (uint32_t)24;
+    hash[1] = b0 << (uint32_t)24 | (b0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (b0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | b0 >> (uint32_t)24;
+    hash[2] = c0 << (uint32_t)24 | (c0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (c0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | c0 >> (uint32_t)24;
+    hash[3] = d0 << (uint32_t)24 | (d0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (d0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | d0 >> (uint32_t)24;
 
     free(newMsg);
 
