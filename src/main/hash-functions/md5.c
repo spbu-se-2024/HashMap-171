@@ -20,6 +20,7 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
     size_t newSize = (((size + 8) / 64) + 1) * 64;
     uint8_t *newMsg = calloc(newSize + 64, 1);
     HashFunc_autoprintErrAndStopRunIf(newMsg == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    memcpy(newMsg, message, size);
     newMsg[size] = 128;
     size_t bitSize = 8 * size;
     memcpy(newMsg + newSize - 8, &bitSize, 8);
