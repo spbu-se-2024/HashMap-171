@@ -12,8 +12,8 @@
 #define FUN_I(b, c, d) ((c) ^ (~(d) | (b)))
 
 HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
-    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_MEM_ALLOC,);
-    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_NULL_ARG,);
+    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_NULL_ARG,);
 
 
     // Pre-processing

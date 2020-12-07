@@ -7,8 +7,8 @@
 #define MULT_PRIME 257
 
 HashFuncErrCode calculatePolynomialHash(const char *message, size_t size, uint64_t *hash) {
-    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_MEM_ALLOC,);
-    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_NULL_ARG,);
+    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_NULL_ARG,);
 
 
     uint64_t tempHash = 0;

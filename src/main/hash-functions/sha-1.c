@@ -54,8 +54,8 @@ static uint8_t *formatMessageToBlocks(const char *message, size_t size) {
 
 // TODO : Can be redone to allocate less memory, and allocate on the stack
 HashFuncErrCode calculateSha1Hash(const char *message, size_t size, uint32_t *hash) {
-    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_MEM_ALLOC,);
-    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_NULL_ARG,);
+    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_NULL_ARG,);
 
 
     uint8_t *buffer = formatMessageToBlocks(message, size);
