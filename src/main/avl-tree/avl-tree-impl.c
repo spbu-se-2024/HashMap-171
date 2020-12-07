@@ -48,8 +48,10 @@ static void AvlTree_updateHeight(AvlTreeNode *node) {
     AvlTree_updateHeight(node->parent);
 }
 
-// TODO : Implement AvlTree_balance(...)
-static void AvlTree_balance(AvlTreeNode *node) {}
+// TODO : Implement balance
+static void AvlTree_balance(AvlTreeNode *node) {
+    (void) node;
+}
 
 
 
