@@ -12,14 +12,14 @@
 #define FUN_I(b, c, d) ((c) ^ (~(d) | (b)))
 
 HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
-    if (message == NULL || hash == NULL) return HASH_FUNC_E_NULL_ARG;
+    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_MEM_ALLOC,);
 
 
     // Pre-processing
     size_t newSize = (((size + 8) / 64) + 1) * 64;
     uint8_t *newMsg = calloc(newSize + 64, 1);
-    if (newMsg == NULL) return HASH_FUNC_E_MEM_ALLOC;
-    memcpy(newMsg, message, size);
+    HashFunc_autoprintErrAndStopRunIf(newMsg == NULL, HASH_FUNC_E_MEM_ALLOC,);
     newMsg[size] = 128;
     size_t bitSize = 8 * size;
     memcpy(newMsg + newSize - 8, &bitSize, 8);
@@ -32,7 +32,7 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
 
     static const uint32_t s[] =
         {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-         5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+         5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20,
          4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
          6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 

@@ -14,7 +14,7 @@ static uint8_t *formatMessageToBlocks(const char *message, size_t size) {
 
     blocksCount = lastBlockOffset + (lastBlockSize < 56 ? 1 : 2);
 
-    buffer = (uint8_t *) calloc(blocksCount, 64);
+    buffer = calloc(blocksCount, 64);
     if (buffer == NULL) return NULL;
 
     for (unsigned int i = 0; i < lastBlockOffset; i++) {
@@ -54,12 +54,12 @@ static uint8_t *formatMessageToBlocks(const char *message, size_t size) {
 
 // TODO : Can be redone to allocate less memory, and allocate on the stack
 HashFuncErrCode calculateSha1Hash(const char *message, size_t size, uint32_t *hash) {
-    if (message == NULL) return HASH_FUNC_E_NULL_ARG;
-    if (hash == NULL) return HASH_FUNC_E_NULL_ARG;
+    HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_MEM_ALLOC,);
+    HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_MEM_ALLOC,);
 
 
     uint8_t *buffer = formatMessageToBlocks(message, size);
-    if (buffer == NULL) return HASH_FUNC_E_MEM_ALLOC;
+    HashFunc_autoprintErrAndStopRunIf(buffer == NULL, HASH_FUNC_E_MEM_ALLOC,);
 
     hash[0] = 0x67452301;
     hash[1] = 0xEFCDAB89;

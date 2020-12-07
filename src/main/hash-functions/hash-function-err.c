@@ -1,12 +1,9 @@
 #include "hash-function-err.h"
 
 
-// TODO : Add appropriate messages for error codes
 const char *const HASH_FUNC_ERR_MESSAGES[] = {
-    "TODO",
+    "everything is ok",
+    "memory allocation error",
+    "the function argument must not be NULL",
+    "something went wrong",
 };
-
-
-void HashFunc_printErr(FILE *errStream, HashFuncErrCode errCode) {
-    fprintf(errStream, "Hash Function - Error: %s\n", HASH_FUNC_ERR_MESSAGES[errCode]);
-}
