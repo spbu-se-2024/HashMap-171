@@ -66,7 +66,7 @@ void TestPolynomial_AllCharsUsed_CalculateHash(CuTest *tc) {
     const size_t size = 256;
     char message[size];
     for (size_t i = 0; i < size; i++) {
-        message[i] = (char) (i % 256u);
+        message[i] = (char) i;
     }
     checkPolynomialHash(message, size, 2039883115088510848u, tc);
 }

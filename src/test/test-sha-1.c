@@ -73,7 +73,7 @@ void TestSha1_AllCharsUsed_CalculateHash(CuTest *tc) {
     const size_t size = 256;
     char message[size];
     for (size_t i = 0; i < size; i++) {
-        message[i] = (char) (i % 256u);
+        message[i] = (char) i;
     }
     const uint32_t expectedValue[BLOCKS_USED_NUM] = {0x4916D6BD, 0xB7F78E68, 0x03698CAB, 0x32D1586E, 0xA457DFC8};
     checkSha1Hash(message, size, expectedValue, tc);
