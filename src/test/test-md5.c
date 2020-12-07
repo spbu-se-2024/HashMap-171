@@ -73,7 +73,7 @@ void TestMd5_AllCharsUsed_CalculateHash(CuTest *tc) {
     const size_t size = 256;
     char message[size];
     for (size_t i = 0; i < size; i++) {
-        message[i] = i;
+        message[i] = (char) (i % 256u);
     }
     const uint32_t expectedValue[BLOCKS_USED_NUM] = {0xE2C865DB, 0x4162BED9, 0x63BFAA9E, 0xF6AC18F0};
     checkMd5Hash(message, size, expectedValue, tc);
