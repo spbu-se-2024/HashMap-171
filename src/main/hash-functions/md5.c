@@ -4,13 +4,13 @@
 
 // functions
 #define LEFT_ROTATE(x, c) (((x) << (c)) | ((x) >> (32 - (c))))
-#define FUN_F(b, c, d) (((b) & (c)) | ((~b) & (d)))
-#define FUN_G(b, c, d) (((b) & (d)) | ((~d) & (c)))
+#define FUN_F(b, c, d) (((b) & (c)) | ((~(b)) & (d)))
+#define FUN_G(b, c, d) (((b) & (d)) | ((~(d)) & (c)))
 #define FUN_H(b, c, d) ((b) ^ (c) ^ (d))
-#define FUN_I(b, c, d) ((c) ^ ((~d) | (b)))
+#define FUN_I(b, c, d) ((c) ^ ((~(d)) | (b)))
 
 HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *hash) {
-    if(message == NULL || hash == NULL) return HASH_FUNC_E_NULL_ARG;
+    if (message == NULL || hash == NULL) return HASH_FUNC_E_NULL_ARG;
 
     // Pre-processing
     size_t newSize = (((size + 8) / 64) + 1) * 64;
@@ -53,7 +53,7 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
 
     // Main loop
     for (size_t offset = 0; offset < newSize; offset += 64) {
-        uint32_t *words = (uint32_t *) (newMsg + offset);
+        uint32_t *words = (uint32_t * )(newMsg + offset);
 
         uint32_t a = a0;
         uint32_t b = b0;
@@ -89,10 +89,14 @@ HashFuncErrCode calculateMd5Hash(const char *message, size_t size, uint32_t *has
     }
 
     // uint32_t hash[4] BE
-    hash[0] = a0 << (uint32_t)24 | (a0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (a0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | a0 >> (uint32_t)24;
-    hash[1] = b0 << (uint32_t)24 | (b0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (b0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | b0 >> (uint32_t)24;
-    hash[2] = c0 << (uint32_t)24 | (c0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (c0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | c0 >> (uint32_t)24;
-    hash[3] = d0 << (uint32_t)24 | (d0 & (uint32_t)0x0000ff00) << (uint32_t)8 | (d0 & (uint32_t)0x00ff0000) >> (uint32_t)8 | d0 >> (uint32_t)24;
+    hash[0] = a0 << (uint32_t) 24 | (a0 & (uint32_t) 0x0000ff00) << (uint32_t) 8 |
+              (a0 & (uint32_t) 0x00ff0000) >> (uint32_t) 8 | a0 >> (uint32_t) 24;
+    hash[1] = b0 << (uint32_t) 24 | (b0 & (uint32_t) 0x0000ff00) << (uint32_t) 8 |
+              (b0 & (uint32_t) 0x00ff0000) >> (uint32_t) 8 | b0 >> (uint32_t) 24;
+    hash[2] = c0 << (uint32_t) 24 | (c0 & (uint32_t) 0x0000ff00) << (uint32_t) 8 |
+              (c0 & (uint32_t) 0x00ff0000) >> (uint32_t) 8 | c0 >> (uint32_t) 24;
+    hash[3] = d0 << (uint32_t) 24 | (d0 & (uint32_t) 0x0000ff00) << (uint32_t) 8 |
+              (d0 & (uint32_t) 0x00ff0000) >> (uint32_t) 8 | d0 >> (uint32_t) 24;
 
     free(newMsg);
 
