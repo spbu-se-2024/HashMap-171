@@ -1,12 +1,11 @@
 #include "multiset-err.h"
 
 
-// TODO : Add appropriate messages for error codes
 const char *const MULTISET_ERR_MESSAGES[] = {
-    "TODO",
+    "everything is ok",
+    "memory allocation error",
+    "pointer to `this` must not be NULL",
+    "the function argument must not be NULL",
+    "wrong Multiset Configuration, size must be positive",
+    "something went wrong",
 };
-
-
-void Multiset_printErr(FILE *errStream, MultisetErrCode errCode) {
-    fprintf(errStream, "Multiset - Error: %s\n", MULTISET_ERR_MESSAGES[errCode]);
-}

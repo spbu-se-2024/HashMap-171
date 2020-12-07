@@ -18,24 +18,23 @@ static inline int Multiset_itemComparerForAvlTree(void *itemA, void *itemB) {
 /*--------------------------------- Memory Management Interface on the Stack and Heap --------------------------------*/
 
 MultisetErrCode Multiset_initMultiset(Multiset *multiset, MultisetConfig config) {
-    if (multiset == NULL) return MULTISET_E_NULL_ARG;
-    if (!Multiset_isConfigValid(config)) return MULTISET_E_WRONG_CONFIG;
-
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(multiset == NULL, MULTISET_E_NULL_ARG,);
+    Multiset_autoprintErrAndStopRunIf(!Multiset_isConfigValid(config), MULTISET_E_WRONG_CONFIG,);
 
 
     *multiset = (Multiset) {0};
 
 
     multiset->_data = calloc(config.size, sizeof *multiset->_data);
-    if (multiset->_data == NULL) {
-        return MULTISET_E_MEM_ALLOC;
-    }
+    Multiset_autoprintErrAndStopRunIf(multiset->_data == NULL, MULTISET_E_MEM_ALLOC,);
 
     for (size_t i = 0; i < config.size; i++) {
-        if ((avlTreeErrCode = AvlTree_initAvlTree(&multiset->_data[i], Multiset_itemComparerForAvlTree, free))) {
-            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-        }
+        Multiset_stopRunOnBadErrCode(
+            Multiset_convertAvlTreeErrCode(
+                AvlTree_initAvlTree(&multiset->_data[i], Multiset_itemComparerForAvlTree, free)
+            ),
+            { free(multiset->_data); }
+        );
     }
 
     multiset->_config = config;
@@ -56,14 +55,10 @@ MultisetErrCode Multiset_initMultiset(Multiset *multiset, MultisetConfig config)
 }
 
 MultisetErrCode Multiset_eraseMultiset(Multiset *multiset) {
-    if (multiset == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode errCode;
+    Multiset_autoprintErrAndStopRunIf(multiset == NULL, MULTISET_E_NULL_ARG,);
 
 
-    if ((errCode = multiset->clear(multiset))) {
-        return errCode;
-    }
+    Multiset_stopRunOnBadErrCode(multiset->clear(multiset),);
 
     free(multiset->_data);
 
@@ -76,27 +71,25 @@ MultisetErrCode Multiset_eraseMultiset(Multiset *multiset) {
 /*-------------------------------------- Memory Management Interface on the Heap -------------------------------------*/
 
 MultisetErrCode Multiset_allocMultiset(Multiset **pMultiset, MultisetConfig config) {
-    if (pMultiset == NULL) return MULTISET_E_NULL_ARG;
-    if (!Multiset_isConfigValid(config)) return MULTISET_E_WRONG_CONFIG;
+    Multiset_autoprintErrAndStopRunIf(pMultiset == NULL, MULTISET_E_NULL_ARG,);
+    Multiset_autoprintErrAndStopRunIf(!Multiset_isConfigValid(config), MULTISET_E_WRONG_CONFIG,);
 
 
     *pMultiset = malloc(sizeof **pMultiset);
-    if (*pMultiset == NULL) {
-        return MULTISET_E_MEM_ALLOC;
-    }
+    Multiset_autoprintErrAndStopRunIf(*pMultiset == NULL, MULTISET_E_MEM_ALLOC,);
 
-    return Multiset_initMultiset(*pMultiset, config);
+    Multiset_stopRunOnBadErrCode(Multiset_initMultiset(*pMultiset, config), {
+        free(pMultiset);
+    });
+
+    return MULTISET_E_OK;
 }
 
 MultisetErrCode Multiset_freeMultiset(Multiset **pMultiset) {
-    if (pMultiset == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode errCode;
+    Multiset_autoprintErrAndStopRunIf(pMultiset == NULL, MULTISET_E_NULL_ARG,);
 
 
-    if ((errCode = Multiset_eraseMultiset(*pMultiset))) {
-        return errCode;
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_eraseMultiset(*pMultiset),);
 
     free(*pMultiset);
     *pMultiset = NULL;

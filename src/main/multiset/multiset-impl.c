@@ -39,12 +39,10 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 /*------------------------------------------------- Hash conversions -------------------------------------------------*/
 
 static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
-    HashFuncErrCode errCode;
-
     uint32_t hash[4];
-    if ((errCode = calculateMd5Hash(item, strlen(item), hash))) {
-        return Multiset_convertHashFuncErrCode(errCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
+        calculateMd5Hash(item, strlen(item), hash)
+    ),);
 
     size_t _index = 0;
     _index = (_index + hash[3] % SIZE_MAX) % SIZE_MAX;
@@ -55,12 +53,10 @@ static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
 }
 
 static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
-    HashFuncErrCode errCode;
-
     uint64_t hash;
-    if ((errCode = calculatePolynomialHash(item, strlen(item), &hash))) {
-        return Multiset_convertHashFuncErrCode(errCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
+        calculatePolynomialHash(item, strlen(item), &hash)
+    ),);
 
     *index = hash % SIZE_MAX;
 
@@ -68,12 +64,10 @@ static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *i
 }
 
 static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) {
-    HashFuncErrCode errCode;
-
     uint32_t hash[5];
-    if ((errCode = calculateSha1Hash(item, strlen(item), hash))) {
-        return Multiset_convertHashFuncErrCode(errCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
+        calculateSha1Hash(item, strlen(item), hash)
+    ),);
 
     size_t _index = 0;
     _index = (_index + hash[4] % SIZE_MAX) % SIZE_MAX;
@@ -85,25 +79,21 @@ static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) 
 
 
 static MultisetErrCode Multiset_getItemIndex(MultisetItem item, MultisetConfig config, size_t *index) {
-    MultisetErrCode errCode;
-
     size_t _index;
 
     switch (config.hashFuncLabel) {
         case MULTISET_HASH_FUNC_LABEL_MD5:
-            errCode = convertMd5HashToSizeT(item, &_index);
+            Multiset_stopRunOnBadErrCode(convertMd5HashToSizeT(item, &_index),);
             break;
         case MULTISET_HASH_FUNC_LABEL_POLYNOMIAL:
-            errCode = convertPolynomialHashToSizeT(item, &_index);
+            Multiset_stopRunOnBadErrCode(convertPolynomialHashToSizeT(item, &_index),);
             break;
         case MULTISET_HASH_FUNC_LABEL_SHA_1:
-            errCode = convertSha1HashToSizeT(item, &_index);
+            Multiset_stopRunOnBadErrCode(convertSha1HashToSizeT(item, &_index),);
             break;
         default:
             return MULTISET_E_OTHER;
     }
-
-    if (errCode) return errCode;
 
     *index = _index % config.size;
 
@@ -120,17 +110,13 @@ static MultisetErrCode Multiset_getItemIndex(MultisetItem item, MultisetConfig c
 /*----------------------------------------------- Has Item & Count Item ----------------------------------------------*/
 
 static MultisetErrCode Multiset_hasItem(Multiset *this, MultisetItem item, bool *hasItem) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-    if (hasItem == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode errCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
+    Multiset_autoprintErrAndStopRunIf(hasItem == NULL, MULTISET_E_NULL_ARG,);
 
 
     size_t itemCount;
-    if ((errCode = this->countItem(this, item, &itemCount))) {
-        return errCode;
-    }
+    Multiset_stopRunOnBadErrCode(this->countItem(this, item, &itemCount),);
 
     *hasItem = itemCount != 0;
 
@@ -138,24 +124,19 @@ static MultisetErrCode Multiset_hasItem(Multiset *this, MultisetItem item, bool 
 }
 
 static MultisetErrCode Multiset_countItem(Multiset *this, MultisetItem item, size_t *itemCount) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-    if (itemCount == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode multisetErrCode;
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
+    Multiset_autoprintErrAndStopRunIf(itemCount == NULL, MULTISET_E_NULL_ARG,);
 
 
     size_t index;
-    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
-        return multisetErrCode;
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_getItemIndex(item, this->_config, &index),);
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
-        return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+        pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode)
+    ),);
 
     *itemCount = avlTreeNode != NULL ? avlTreeNode->count : 0;
 
@@ -166,39 +147,30 @@ static MultisetErrCode Multiset_countItem(Multiset *this, MultisetItem item, siz
 /*----------------------------------------------------- Add Item -----------------------------------------------------*/
 
 static MultisetErrCode Multiset_addItem(Multiset *this, MultisetItem item) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode errCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
 
 
-    if ((errCode = this->addItemTimes(this, item, 1))) {
-        return errCode;
-    }
+    Multiset_stopRunOnBadErrCode(this->addItemTimes(this, item, 1),);
 
     return MULTISET_E_OK;
 }
 
 static MultisetErrCode Multiset_addItemTimes(Multiset *this, MultisetItem item, size_t times) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode multisetErrCode;
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
 
 
     if (times == 0) return MULTISET_E_OK;
 
     size_t index;
-    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
-        return multisetErrCode;
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_getItemIndex(item, this->_config, &index),);
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->addItemTimes(pAvlTree, (void *) item, times, &avlTreeNode))) {
-        return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+        pAvlTree->addItemTimes(pAvlTree, (void *) item, times, &avlTreeNode)
+    ),);
 
     this->itemsCount += times;
     if (avlTreeNode->count == times) ++this->uniqueItemsCount;
@@ -210,30 +182,25 @@ static MultisetErrCode Multiset_addItemTimes(Multiset *this, MultisetItem item, 
 /*---------------------------------------------------- Remove Item ---------------------------------------------------*/
 
 static MultisetErrCode Multiset_removeItem(Multiset *this, MultisetItem item) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode multisetErrCode;
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
 
 
     size_t index;
-    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
-        return multisetErrCode;
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_getItemIndex(item, this->_config, &index),);
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
-        return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+        pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode)
+    ),);
 
     if (avlTreeNode != NULL) {
         size_t itemCount = avlTreeNode->count;
 
-        if ((avlTreeErrCode = pAvlTree->removeItem(pAvlTree, (void *) item))) {
-            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-        }
+        Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+            pAvlTree->removeItem(pAvlTree, (void *) item)
+        ),);
 
         --this->itemsCount;
         if (itemCount == 1) --this->uniqueItemsCount;
@@ -243,30 +210,25 @@ static MultisetErrCode Multiset_removeItem(Multiset *this, MultisetItem item) {
 }
 
 static MultisetErrCode Multiset_removeItemWithCopies(Multiset *this, MultisetItem item) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (item == NULL) return MULTISET_E_NULL_ARG;
-
-    MultisetErrCode multisetErrCode;
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(item == NULL, MULTISET_E_NULL_ARG,);
 
 
     size_t index;
-    if ((multisetErrCode = Multiset_getItemIndex(item, this->_config, &index))) {
-        return multisetErrCode;
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_getItemIndex(item, this->_config, &index),);
     AvlTree *pAvlTree = &this->_data[index];
 
     AvlTreeNode *avlTreeNode;
-    if ((avlTreeErrCode = pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode))) {
-        return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-    }
+    Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+        pAvlTree->findItem(pAvlTree, (void *) item, &avlTreeNode)
+    ),);
 
     if (avlTreeNode != NULL) {
         size_t itemCount = avlTreeNode->count;
 
-        if ((avlTreeErrCode = pAvlTree->removeItemWithCopies(pAvlTree, (void *) item))) {
-            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-        }
+        Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+            pAvlTree->removeItemWithCopies(pAvlTree, (void *) item)
+        ),);
 
         this->itemsCount -= itemCount;
         --this->uniqueItemsCount;
@@ -289,22 +251,17 @@ static void Multiset_avlTreeTraverserF(void *externalData, AvlTreeNode *node) {
 }
 
 static MultisetErrCode Multiset_traverse(Multiset *this, void *externalData, MultisetTraverserF traverser) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (traverser == NULL) return MULTISET_E_NULL_ARG;
-
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(traverser == NULL, MULTISET_E_NULL_ARG,);
 
 
     struct layered_external_data_t layeredExternalData = {externalData, traverser};
 
     const size_t multisetSize = this->_config.size;
     for (size_t i = 0; i < multisetSize; i++) {
-        if ((
-                avlTreeErrCode = this->_data[i].traverse(&this->_data[i], &layeredExternalData,
-                                                         Multiset_avlTreeTraverserF)
-        )) {
-            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-        }
+        Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+            this->_data[i].traverse(&this->_data[i], &layeredExternalData, Multiset_avlTreeTraverserF)
+        ),);
     }
 
     return MULTISET_E_OK;
@@ -314,16 +271,14 @@ static MultisetErrCode Multiset_traverse(Multiset *this, void *externalData, Mul
 /*------------------------------------------------------- Clear ------------------------------------------------------*/
 
 static MultisetErrCode Multiset_clear(Multiset *this) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-
-    AvlTreeErrCode avlTreeErrCode;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
 
 
     const size_t multisetSize = this->_config.size;
     for (size_t i = 0; i < multisetSize; i++) {
-        if ((avlTreeErrCode = this->_data[i].clear(&this->_data[i]))) {
-            return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
-        }
+        Multiset_stopRunOnBadErrCode(Multiset_convertAvlTreeErrCode(
+            this->_data[i].clear(&this->_data[i])
+        ),);
     }
 
     this->itemsCount = 0;
@@ -345,20 +300,17 @@ static void Multiset_getStatsMultisetTraverser(void *externalData, MultisetItem 
 }
 
 static MultisetErrCode Multiset_getStatistics(Multiset *this, MultisetStats *stats) {
-    if (this == NULL) return MULTISET_E_NULL_THIS;
-    if (stats == NULL) return MULTISET_E_NULL_ARG;
+    Multiset_autoprintErrAndStopRunIf(this == NULL, MULTISET_E_NULL_THIS,);
+    Multiset_autoprintErrAndStopRunIf(stats == NULL, MULTISET_E_NULL_ARG,);
 
-    MultisetErrCode errCode;
 
     stats->config = this->_config;
     stats->itemsCount = this->itemsCount;
     stats->uniqueItemsCount = this->uniqueItemsCount;
-    stats->maxCount = 0;
     stats->maxCountWord = NULL;
+    stats->maxCount = 0;
 
-    if ((errCode = this->traverse(this, stats, Multiset_getStatsMultisetTraverser)) != MULTISET_E_OK) {
-        return errCode;
-    }
+    Multiset_stopRunOnBadErrCode(this->traverse(this, stats, Multiset_getStatsMultisetTraverser),);
 
     return MULTISET_E_OK;
 }
