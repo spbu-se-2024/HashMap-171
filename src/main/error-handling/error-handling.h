@@ -1,6 +1,7 @@
 #ifndef HASHMAP_171_ERROR_HANDLING_H
 #define HASHMAP_171_ERROR_HANDLING_H
 
+#include <stdbool.h>
 #include <stdio.h>
 
 
