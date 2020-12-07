@@ -14,8 +14,8 @@ static inline size_t AvlTree_getNodeHeight(AvlTreeNode *node) { return node != N
 /*------------------------------------------------ Find Min & Max Item -----------------------------------------------*/
 
 static AvlTreeErrCode AvlTree_findMinItem(AvlTree *this, AvlTreeNode **pMinItemNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (pMinItemNode == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(pMinItemNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node = this->_tree;
@@ -27,8 +27,8 @@ static AvlTreeErrCode AvlTree_findMinItem(AvlTree *this, AvlTreeNode **pMinItemN
 }
 
 static AvlTreeErrCode AvlTree_findMaxItem(AvlTree *this, AvlTreeNode **pMaxItemNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (pMaxItemNode == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(pMaxItemNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node = this->_tree;
@@ -63,17 +63,13 @@ static void AvlTree_balance(AvlTreeNode *node) {
 /*----------------------------------------------------- Find Item ----------------------------------------------------*/
 
 static AvlTreeErrCode AvlTree_findItem(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-    if (pItemNode == NULL) return AVL_TREE_E_NULL_ARG;
-
-    AvlTreeErrCode errCode;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(pItemNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node;
-    if ((errCode = this->findClosestItem(this, item, &node))) {
-        return errCode;
-    }
+    AvlTree_stopRunOnBadErrCode(this->findClosestItem(this, item, &node),);
 
     *pItemNode = node != NULL && this->_compF(item, node->item) == 0 ? node : NULL;
 
@@ -81,9 +77,9 @@ static AvlTreeErrCode AvlTree_findItem(AvlTree *this, void *item, AvlTreeNode **
 }
 
 static AvlTreeErrCode AvlTree_findClosestItem(AvlTree *this, void *item, AvlTreeNode **pItemNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-    if (pItemNode == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(pItemNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node = this->_tree;
@@ -111,9 +107,9 @@ static AvlTreeErrCode AvlTree_findClosestItem(AvlTree *this, void *item, AvlTree
 /*----------------------------------------------- Previous & Next Node -----------------------------------------------*/
 
 static AvlTreeErrCode AvlTree_prevNode(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pPrevNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (node == NULL) return AVL_TREE_E_NULL_ARG;
-    if (pPrevNode == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(node == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(pPrevNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *minItemNode;
@@ -135,9 +131,9 @@ static AvlTreeErrCode AvlTree_prevNode(AvlTree *this, AvlTreeNode *node, AvlTree
 }
 
 static AvlTreeErrCode AvlTree_nextNode(AvlTree *this, AvlTreeNode *node, AvlTreeNode **pNextNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (node == NULL) return AVL_TREE_E_NULL_ARG;
-    if (pNextNode == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(node == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(pNextNode == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *maxItemNode;
@@ -162,39 +158,29 @@ static AvlTreeErrCode AvlTree_nextNode(AvlTree *this, AvlTreeNode *node, AvlTree
 /*----------------------------------------------------- Add Item -----------------------------------------------------*/
 
 static AvlTreeErrCode AvlTree_addItem(AvlTree *this, void *item, AvlTreeNode **pNewNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
-    AvlTreeErrCode errCode;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
 
 
-    if ((errCode = this->addItemTimes(this, item, 1, pNewNode))) {
-        return errCode;
-    }
+    AvlTree_stopRunOnBadErrCode(this->addItemTimes(this, item, 1, pNewNode),);
 
     return AVL_TREE_E_OK;
 }
 
 // TODO : Rewrite AvlTree_addItemTimes(...)
 static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
-    AvlTreeErrCode errCode;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     if (times == 0) return AVL_TREE_E_OK;
 
     AvlTreeNode *node;
-    if ((errCode = this->findClosestItem(this, item, &node))) {
-        return errCode;
-    }
+    AvlTree_stopRunOnBadErrCode(this->findClosestItem(this, item, &node),);
 
     if (node == NULL) {
         this->_tree = malloc(sizeof(AvlTreeNode));
-        if (this->_tree == NULL) {
-            return AVL_TREE_E_MEM_ALLOC;
-        }
+        AvlTree_autoprintErrAndStopRunIf(this->_tree == NULL, AVL_TREE_E_MEM_ALLOC,);
 
         *this->_tree = (AvlTreeNode) {item, .count = times, .height = 1};
 
@@ -204,7 +190,7 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
         if (comp < 0) {
             node->left = malloc(sizeof(AvlTreeNode));
-            if (node->left == NULL) return AVL_TREE_E_MEM_ALLOC;
+            AvlTree_autoprintErrAndStopRunIf(node->left == NULL, AVL_TREE_E_MEM_ALLOC,);
 
             *node->left = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
 
@@ -214,7 +200,7 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
             if (this->_freeF != NULL) this->_freeF(item);
         } else {
             node->right = malloc(sizeof(AvlTreeNode));
-            if (node->right == NULL) return AVL_TREE_E_MEM_ALLOC;
+            AvlTree_autoprintErrAndStopRunIf(node->right == NULL, AVL_TREE_E_MEM_ALLOC,);
 
             *node->right = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
 
@@ -236,7 +222,7 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
 // TODO : Rewrite AvlTree_removeNode(...)
 static AvlTreeErrCode AvlTree_removeNode(AvlTree *this, AvlTreeNode *node) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
 
 
     if (node == NULL) return AVL_TREE_E_OK;
@@ -279,16 +265,12 @@ static AvlTreeErrCode AvlTree_removeNode(AvlTree *this, AvlTreeNode *node) {
 
 
 static AvlTreeErrCode AvlTree_removeItem(AvlTree *this, void *item) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
-    AvlTreeErrCode errCode;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node;
-    if ((errCode = this->findItem(this, item, &node))) {
-        return errCode;
-    }
+    AvlTree_stopRunOnBadErrCode(this->findItem(this, item, &node),);
 
     if (node != NULL && node->count > 1) {
         --node->count;
@@ -303,16 +285,12 @@ static AvlTreeErrCode AvlTree_removeItem(AvlTree *this, void *item) {
 }
 
 static AvlTreeErrCode AvlTree_removeItemWithCopies(AvlTree *this, void *item) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (item == NULL) return AVL_TREE_E_NULL_ARG;
-
-    AvlTreeErrCode errCode;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTreeNode *node;
-    if ((errCode = this->findItem(this, item, &node))) {
-        return errCode;
-    }
+    AvlTree_stopRunOnBadErrCode(this->findItem(this, item, &node),);
 
     if (node != NULL) {
         this->itemsCount -= node->count;
@@ -333,8 +311,8 @@ static void AvlTree_dfs(AvlTreeNode *node, void *externalData, AvlTreeTraverserF
 }
 
 static AvlTreeErrCode AvlTree_traverse(AvlTree *this, void *externalData, AvlTreeTraverserF traverserF) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
-    if (traverserF == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
+    AvlTree_autoprintErrAndStopRunIf(traverserF == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     if (this->_tree != NULL) AvlTree_dfs(this->_tree, externalData, traverserF);
@@ -355,7 +333,7 @@ static void AvlTree_recursiveNodeFree(AvlTreeNode *node, AvlTreeItemFreeF freeF)
 }
 
 static AvlTreeErrCode AvlTree_clear(AvlTree *this) {
-    if (this == NULL) return AVL_TREE_E_NULL_THIS;
+    AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
 
 
     if (this->_tree != NULL) {

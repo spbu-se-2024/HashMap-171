@@ -6,8 +6,8 @@
 /*--------------------------------- Memory Management Interface on the Stack and Heap --------------------------------*/
 
 AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, AvlTreeItemFreeF freeF) {
-    if (avlTree == NULL) return AVL_TREE_E_NULL_ARG;
-    if (compF == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(avlTree == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(compF == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     *avlTree = (AvlTree) {0};
@@ -33,7 +33,7 @@ AvlTreeErrCode AvlTree_initAvlTree(AvlTree *avlTree, AvlTreeItemCompF compF, Avl
 }
 
 AvlTreeErrCode AvlTree_eraseAvlTree(AvlTree *avlTree) {
-    if (avlTree == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(avlTree == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     avlTree->clear(avlTree);
@@ -47,20 +47,22 @@ AvlTreeErrCode AvlTree_eraseAvlTree(AvlTree *avlTree) {
 /*-------------------------------------- Memory Management Interface on the Heap -------------------------------------*/
 
 AvlTreeErrCode AvlTree_allocAvlTree(AvlTree **pAvlTree, AvlTreeItemCompF compF, AvlTreeItemFreeF freeF) {
-    if (pAvlTree == NULL) return AVL_TREE_E_NULL_ARG;
-    if (compF == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(pAvlTree == NULL, AVL_TREE_E_NULL_ARG,);
+    AvlTree_autoprintErrAndStopRunIf(compF == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     *pAvlTree = malloc(sizeof **pAvlTree);
-    if (*pAvlTree == NULL) {
-        return AVL_TREE_E_MEM_ALLOC;
-    }
+    AvlTree_autoprintErrAndStopRunIf(*pAvlTree == NULL, AVL_TREE_E_MEM_ALLOC,);
 
-    return AvlTree_initAvlTree(*pAvlTree, compF, freeF);
+    AvlTree_stopRunOnBadErrCode(AvlTree_initAvlTree(*pAvlTree, compF, freeF), {
+        free(pAvlTree);
+    });
+
+    return AVL_TREE_E_OK;
 }
 
 AvlTreeErrCode AvlTree_freeAvlTree(AvlTree **pAvlTree) {
-    if (pAvlTree == NULL) return AVL_TREE_E_NULL_ARG;
+    AvlTree_autoprintErrAndStopRunIf(pAvlTree == NULL, AVL_TREE_E_NULL_ARG,);
 
 
     AvlTree_eraseAvlTree(*pAvlTree);
