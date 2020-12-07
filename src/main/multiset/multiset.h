@@ -35,8 +35,8 @@ typedef struct {
     MultisetConfig config;
     size_t itemsCount;
     size_t uniqueItemsCount;
-    size_t maxCount;
     const char *maxCountWord;
+    size_t maxCount;
 } MultisetStats;
 
 

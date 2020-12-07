@@ -300,7 +300,8 @@ static MultisetErrCode Multiset_traverse(Multiset *this, void *externalData, Mul
     const size_t multisetSize = this->_config.size;
     for (size_t i = 0; i < multisetSize; i++) {
         if ((
-            avlTreeErrCode = this->_data[i].traverse(&this->_data[i], &layeredExternalData, Multiset_avlTreeTraverserF)
+                avlTreeErrCode = this->_data[i].traverse(&this->_data[i], &layeredExternalData,
+                                                         Multiset_avlTreeTraverserF)
         )) {
             return Multiset_convertAvlTreeErrCode(avlTreeErrCode);
         }
@@ -334,24 +335,30 @@ static MultisetErrCode Multiset_clear(Multiset *this) {
 
 /*-------------------------------------------------- Get Statistics --------------------------------------------------*/
 
-static void getStatsMultisetTraverser(void *externalData, MultisetItem item, size_t count) {
-    MultisetStats *stats = (MultisetStats*)externalData;
+static void Multiset_getStatsMultisetTraverser(void *externalData, MultisetItem item, size_t count) {
+    MultisetStats *stats = externalData;
 
-    if(count > stats->maxCount) {
+    if (count > stats->maxCount) {
         stats->maxCount = count;
         stats->maxCountWord = item;
     }
 }
 
-// TODO : Implement Multiset_getStatistics(...)
 static MultisetErrCode Multiset_getStatistics(Multiset *this, MultisetStats *stats) {
-    if(this == NULL) return MULTISET_E_NULL_THIS;
-    if(stats == NULL) return MULTISET_E_NULL_ARG;
+    if (this == NULL) return MULTISET_E_NULL_THIS;
+    if (stats == NULL) return MULTISET_E_NULL_ARG;
+
+    MultisetErrCode errCode;
 
     stats->config = this->_config;
     stats->itemsCount = this->itemsCount;
     stats->uniqueItemsCount = this->uniqueItemsCount;
-    this->traverse(this, stats, getStatsMultisetTraverser);
+    stats->maxCount = 0;
+    stats->maxCountWord = NULL;
+
+    if ((errCode = this->traverse(this, stats, Multiset_getStatsMultisetTraverser)) != MULTISET_E_OK) {
+        return errCode;
+    }
 
     return MULTISET_E_OK;
 }
