@@ -68,7 +68,7 @@ void TestPolynomial_AllCharsUsed_CalculateHash(CuTest *tc) {
     for (size_t i = 0; i < size; i++) {
         message[i] = (char) i;
     }
-    checkPolynomialHash(message, size, 2039883115088510848u, tc);
+    checkPolynomialHash(message, size, 2245163128380424064u, tc);
 }
 
 

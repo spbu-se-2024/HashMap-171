@@ -10,7 +10,7 @@ HashFuncErrCode calculatePolynomialHash(const char *message, size_t size, uint64
     }
     uint64_t tempHash = 0;
     for (size_t i = 0; i < size; i++) {
-        tempHash = tempHash * MULT_PRIME + message[i];
+        tempHash = tempHash * MULT_PRIME + (unsigned char) message[i];
     }
     *hash = tempHash;
     return HASH_FUNC_E_OK;
