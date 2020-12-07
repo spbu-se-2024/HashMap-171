@@ -11,13 +11,13 @@
 static void TestPolynomial_NullMessagePtr_NullArgError(CuTest *tc) {
     size_t size = 1;
     uint64_t hash = 0;
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculatePolynomialHash(NULL, size, &hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcPolynomialHash(NULL, size, &hash));
 }
 
 static void TestPolynomial_NullHashPtr_NullArgError(CuTest *tc) {
     char *message = "abc";
     size_t size = strlen(message);
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculatePolynomialHash(message, size, NULL));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcPolynomialHash(message, size, NULL));
 }
 
 
@@ -25,7 +25,7 @@ static void TestPolynomial_NullHashPtr_NullArgError(CuTest *tc) {
 
 static void checkPolynomialHash(const char *message, size_t size, uint64_t expectedValue, CuTest *tc) {
     uint64_t hash = 0;
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculatePolynomialHash(message, size, &hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcPolynomialHash(message, size, &hash));
     CuAssertTrue(tc, hash == expectedValue);
 }
 
@@ -34,7 +34,7 @@ static void TestPolynomial_JunkInHashContainer_CalculateHash(CuTest *tc) {
     char *message = "abc";
     const size_t size = strlen(message);
     uint64_t hash = 123456789;
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculatePolynomialHash(message, size, &hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcPolynomialHash(message, size, &hash));
     CuAssertTrue(tc, hash == 6432038);
 }
 

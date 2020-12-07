@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-static uint8_t *formatMessageToBlocks(const char *message, size_t size) {
+static uint8_t *HashFunc_formatMessageToBlocks(const char *message, size_t size) {
     size_t lastBlockSize = size % 64;
     size_t lastBlockOffset = size / 64;
     size_t blocksCount;
@@ -53,12 +53,12 @@ static uint8_t *formatMessageToBlocks(const char *message, size_t size) {
 
 
 // TODO : Can be redone to allocate less memory, and allocate on the stack
-HashFuncErrCode calculateSha1Hash(const char *message, size_t size, uint32_t *hash) {
+HashFuncErrCode HashFunc_calcSha1Hash(const char *message, size_t size, uint32_t *hash) {
     HashFunc_autoprintErrAndStopRunIf(message == NULL, HASH_FUNC_E_NULL_ARG,);
     HashFunc_autoprintErrAndStopRunIf(hash == NULL, HASH_FUNC_E_NULL_ARG,);
 
 
-    uint8_t *buffer = formatMessageToBlocks(message, size);
+    uint8_t *buffer = HashFunc_formatMessageToBlocks(message, size);
     HashFunc_autoprintErrAndStopRunIf(buffer == NULL, HASH_FUNC_E_MEM_ALLOC,);
 
     hash[0] = 0x67452301;

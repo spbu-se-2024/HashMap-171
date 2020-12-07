@@ -13,13 +13,13 @@
 static void TestSha1_NullMessagePtr_NullArgError(CuTest *tc) {
     const size_t size = 1;
     uint32_t hash[BLOCKS_USED_NUM] = {0};
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculateSha1Hash(NULL, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcSha1Hash(NULL, size, hash));
 }
 
 static void TestSha1_NullHashPtr_NullArgError(CuTest *tc) {
     const char *message = "abc";
     const size_t size = strlen(message);
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculateSha1Hash(message, size, NULL));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcSha1Hash(message, size, NULL));
 }
 
 
@@ -27,7 +27,7 @@ static void TestSha1_NullHashPtr_NullArgError(CuTest *tc) {
 
 static void checkSha1Hash(const char *message, size_t size, const uint32_t *expectedValue, CuTest *tc) {
     uint32_t hash[BLOCKS_USED_NUM] = {0};
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculateSha1Hash(message, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcSha1Hash(message, size, hash));
     CuAssertTrue(tc, memcmp(hash, expectedValue, BLOCKS_USED_NUM) == 0);
 }
 
@@ -37,7 +37,7 @@ static void TestSha1_JunkInHashContainer_CalculateHash(CuTest *tc) {
     const size_t size = strlen(message);
     uint32_t hash[BLOCKS_USED_NUM] = {123, 456, 789, 123, 999};
     const uint32_t expectedValue[BLOCKS_USED_NUM] = {0xA9993E36, 0x4706816A, 0xBA3E2571, 0x7850C26C, 0x9CD0D89D};
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculateSha1Hash(message, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcSha1Hash(message, size, hash));
     CuAssertTrue(tc, memcmp(hash, expectedValue, BLOCKS_USED_NUM) == 0);
 }
 

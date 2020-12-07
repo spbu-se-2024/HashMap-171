@@ -41,7 +41,7 @@ static MultisetErrCode Multiset_convertAvlTreeErrCode(AvlTreeErrCode avlTreeErrC
 static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
     uint32_t hash[4];
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
-        calculateMd5Hash(item, strlen(item), hash)
+        HashFunc_calcMd5Hash(item, strlen(item), hash)
     ),);
 
     size_t _index = 0;
@@ -55,7 +55,7 @@ static MultisetErrCode convertMd5HashToSizeT(MultisetItem item, size_t *index) {
 static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *index) {
     uint64_t hash;
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
-        calculatePolynomialHash(item, strlen(item), &hash)
+        HashFunc_calcPolynomialHash(item, strlen(item), &hash)
     ),);
 
     *index = hash % SIZE_MAX;
@@ -66,7 +66,7 @@ static MultisetErrCode convertPolynomialHashToSizeT(MultisetItem item, size_t *i
 static MultisetErrCode convertSha1HashToSizeT(MultisetItem item, size_t *index) {
     uint32_t hash[5];
     Multiset_stopRunOnBadErrCode(Multiset_convertHashFuncErrCode(
-        calculateSha1Hash(item, strlen(item), hash)
+        HashFunc_calcSha1Hash(item, strlen(item), hash)
     ),);
 
     size_t _index = 0;

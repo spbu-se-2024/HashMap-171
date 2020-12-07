@@ -13,13 +13,13 @@
 static void TestMd5_NullMessagePtr_NullArgError(CuTest *tc) {
     const size_t size = 1;
     uint32_t hash[BLOCKS_USED_NUM] = {0};
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculateMd5Hash(NULL, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcMd5Hash(NULL, size, hash));
 }
 
 static void TestMd5_NullHashPtr_NullArgError(CuTest *tc) {
     const char *message = "abc";
     const size_t size = strlen(message);
-    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, calculateMd5Hash(message, size, NULL));
+    CuAssertIntEquals(tc, HASH_FUNC_E_NULL_ARG, HashFunc_calcMd5Hash(message, size, NULL));
 }
 
 
@@ -27,7 +27,7 @@ static void TestMd5_NullHashPtr_NullArgError(CuTest *tc) {
 
 static void checkMd5Hash(const char *message, size_t size, const uint32_t *expectedValue, CuTest *tc) {
     uint32_t hash[BLOCKS_USED_NUM] = {0};
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculateMd5Hash(message, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcMd5Hash(message, size, hash));
     CuAssertTrue(tc, memcmp(hash, expectedValue, BLOCKS_USED_NUM) == 0);
 }
 
@@ -37,7 +37,7 @@ static void TestMd5_JunkInHashContainer_CalculateHash(CuTest *tc) {
     const size_t size = strlen(message);
     uint32_t hash[BLOCKS_USED_NUM] = {123, 456, 789, 123};
     const uint32_t expectedValue[BLOCKS_USED_NUM] = {0x90015098, 0x3CD24FB0, 0xD6963F7D, 0x28E17F72};
-    CuAssertIntEquals(tc, HASH_FUNC_E_OK, calculateMd5Hash(message, size, hash));
+    CuAssertIntEquals(tc, HASH_FUNC_E_OK, HashFunc_calcMd5Hash(message, size, hash));
     CuAssertTrue(tc, memcmp(hash, expectedValue, BLOCKS_USED_NUM) == 0);
 }
 
