@@ -3,6 +3,7 @@
 #include "../main/avl-tree/avl-tree.h"
 
 #include <string.h>
+#include <stdint.h>
 
 static int cmpInt(void *a, void *b);
 
@@ -64,13 +65,13 @@ static void TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr(CuTest *tc) {
 
 static _Bool isCorrectBST(struct avl_tree_node_t *avlTreeNode, AvlTreeItemCompF cmp) {
     return (avlTreeNode->left == NULL ||
-    (cmp(avlTreeNode->left->item, avlTreeNode->item) <= 0 && isCorrectBST(avlTreeNode->left, cmp))) &&
+    (cmp(avlTreeNode->left->item, avlTreeNode->item) < 0 && isCorrectBST(avlTreeNode->left, cmp))) &&
     (avlTreeNode->right == NULL ||
-    (cmp(avlTreeNode->item, avlTreeNode->right->item) <= 0 && isCorrectBST(avlTreeNode->right, cmp)));
+    (cmp(avlTreeNode->item, avlTreeNode->right->item) < 0 && isCorrectBST(avlTreeNode->right, cmp)));
 }
 
 
-static void TestAvlTree_Int_AddCheck_IsCorrectBST1(CuTest *tc) {
+static void TestAvlTree_Int_Add_IsCorrectBST1(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -85,7 +86,7 @@ static void TestAvlTree_Int_AddCheck_IsCorrectBST1(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_AddCheck_IsCorrectBST2(CuTest *tc) {
+static void TestAvlTree_Int_Add_IsCorrectBST2(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -96,6 +97,168 @@ static void TestAvlTree_Int_AddCheck_IsCorrectBST2(CuTest *tc) {
         avlTree.addItem(&avlTree, &ints[i], NULL);
         CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddMany_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    const size_t intsNum = 501;
+    int ints[intsNum];
+    for (int i = 0; i < intsNum; i++) {
+        ints[i] = i;
+    }
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddWithDuplicates_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[17] = {1, -123, -1, 2, 2, 1000, 0, 1, 22, -333, 1337, 0, 0, 0, 101, 655, 1};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemove_IsCorrectBST1(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[9] = {100, 50, 0, -239, 1, 99, 49, -3, -100};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    for (size_t i = 0; i < intsNum - 1; i++) {
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemove_IsCorrectBST2(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[9] = {455, 101, -2, 667, 3, 0, 99, -8, 100};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum / 2; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[0]);
+    CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+    for (size_t i = intsNum / 2; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[5] = {1, 2, 2, 2, 0};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    avlTree.addItem(&avlTree, &ints[0], NULL);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    for (size_t i = 1; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[0]);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_RemoveUnadded_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[4] = {455, -123, 0, -1}, unaddedInt1 = 234567, unaddedInt2 = 98;
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    avlTree.removeItem(&avlTree, &unaddedInt1);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItem(&avlTree, &unaddedInt1);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    for (size_t i = 0; i < intsNum - 1; i++) {
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItem(&avlTree, &unaddedInt2);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+    avlTree.removeItem(&avlTree, &unaddedInt1);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_MixedOperations_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[20] = {1, 2, 3, -1000, 0, 0, 1, -3, -3, 2, -3, 400, 202, 0, 111, 1, 3, 101, 6, 70}, unaddedInt = -200;
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    avlTree.removeItem(&avlTree, &unaddedInt);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, avlTree._tree == NULL);
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, avlTree._tree == NULL);
+    }
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &unaddedInt);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.removeItem(&avlTree, &ints[i]);
+        CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &unaddedInt);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
 
     AvlTree_eraseAvlTree(&avlTree);
 }
@@ -230,8 +393,15 @@ CuSuite *AvlTreeGetSuite() {
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullItemCompPtr_ReturnNullArgErr);
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr);
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddCheck_IsCorrectBST1);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddCheck_IsCorrectBST2);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_Add_IsCorrectBST1);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_Add_IsCorrectBST2);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddMany_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddWithDuplicates_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST1);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST2);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveUnadded_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_MixedOperations_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_Exist);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExist1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExist2);
