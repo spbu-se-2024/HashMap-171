@@ -212,45 +212,72 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
 /*---------------------------------------------------- Remove Item ---------------------------------------------------*/
 
-// TODO : Rewrite AvlTree_removeNode(...)
 static AvlTreeErrCode AvlTree_removeNode(AvlTree *this, AvlTreeNode *node) {
     AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
 
 
     if (node == NULL) return AVL_TREE_E_OK;
 
-    AvlTreeNode *replace = node->left;
-    if (replace != NULL) while (replace->right != NULL) replace = replace->right;
+    AvlTreeNode *balancePoint;
 
-    if (replace != NULL) {
-        replace->right = node->right;
-        if (node->right != NULL) node->right->parent = replace;
-
-        node->left->parent = node->parent;
-        if (node->parent != NULL) {
-            if (node->parent->left == node) node->parent->left = node->left;
-            else node->parent->right = node->left;
-        } else {
-            this->_tree = node->left;
-        }
-    } else {
+    AvlTreeNode *replace;
+    if (node->left == NULL) {
         replace = node->right;
 
-        if (node->right != NULL) node->right->parent = node->parent;
+        if (replace != NULL) replace->parent = node->parent;
+
         if (node->parent != NULL) {
-            if (node->parent->left == node) node->parent->left = node->right;
-            else node->parent->right = node->right;
+            *(node == node->parent->left ? &node->parent->left : &node->parent->right) = replace;
+        }
+
+
+        balancePoint = replace;
+    } else {
+        AvlTree_stopRunOnBadErrCode(this->prevNode(this, node, &replace),);
+
+        if (replace == node->left) {
+            replace->parent = node->parent;
+            replace->right = node->right;
+
+            if (node->parent != NULL) {
+                *(node == node->parent->left ? &node->parent->left : &node->parent->right) = replace;
+            }
+            if (node->right != NULL) node->right->parent = replace;
+
+
+            balancePoint = replace;
         } else {
-            this->_tree = node->right;
+            // Replace left child
+            AvlTreeNode *replaceLeftChild = replace->left;
+
+            if (replaceLeftChild != NULL) replaceLeftChild->parent = replace->parent;
+
+            *(replace == replace->parent->left ? &replace->parent->left : &replace->parent->right) = replaceLeftChild;
+
+
+            // Replace
+            replace->parent = node->parent;
+            replace->left = node->left;
+            replace->right = node->right;
+
+            if (node->parent != NULL) {
+                *(node == node->parent->left ? &node->parent->left : &node->parent->right) = replace;
+            }
+            node->left->parent = replace;
+            if (node->right != NULL) node->right->parent = replace;
+
+
+            balancePoint = replaceLeftChild;
         }
     }
+
+    if (node == this->_tree) this->_tree = replace;
 
     if (this->_freeF != NULL) this->_freeF(node->item);
     free(node);
 
-
-    AvlTree_updateHeight(replace);
-    AvlTree_balance(replace);
+    AvlTree_updateHeight(balancePoint);
+    AvlTree_balance(balancePoint);
 
     return AVL_TREE_E_OK;
 }
