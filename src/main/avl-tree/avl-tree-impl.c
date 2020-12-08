@@ -167,7 +167,6 @@ static AvlTreeErrCode AvlTree_addItem(AvlTree *this, void *item, AvlTreeNode **p
     return AVL_TREE_E_OK;
 }
 
-// TODO : Rewrite AvlTree_addItemTimes(...)
 static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t times, AvlTreeNode **pNewNode) {
     AvlTree_autoprintErrAndStopRunIf(this == NULL, AVL_TREE_E_NULL_THIS,);
     AvlTree_autoprintErrAndStopRunIf(item == NULL, AVL_TREE_E_NULL_ARG,);
@@ -178,41 +177,34 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
     AvlTreeNode *node;
     AvlTree_stopRunOnBadErrCode(this->findClosestItem(this, item, &node),);
 
+    AvlTreeNode *newNode;
     if (node == NULL) {
-        this->_tree = malloc(sizeof(AvlTreeNode));
-        AvlTree_autoprintErrAndStopRunIf(this->_tree == NULL, AVL_TREE_E_MEM_ALLOC,);
+        newNode = malloc(sizeof(AvlTreeNode));
+        AvlTree_autoprintErrAndStopRunIf(newNode == NULL, AVL_TREE_E_MEM_ALLOC,);
 
-        *this->_tree = (AvlTreeNode) {item, .count = times, .height = 1};
+        *newNode = (AvlTreeNode) {item, .count = times, .height = 1};
 
-        node = this->_tree;
+        this->_tree = newNode;
     } else {
         int comp = this->_compF(item, node->item);
 
-        if (comp < 0) {
-            node->left = malloc(sizeof(AvlTreeNode));
-            AvlTree_autoprintErrAndStopRunIf(node->left == NULL, AVL_TREE_E_MEM_ALLOC,);
+        if (comp == 0) {
+            newNode = node;
 
-            *node->left = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
-
-            node = node->left;
-        } else if (comp == 0) {
-            node->count += times;
+            newNode->count += times;
             if (this->_freeF != NULL) this->_freeF(item);
         } else {
-            node->right = malloc(sizeof(AvlTreeNode));
-            AvlTree_autoprintErrAndStopRunIf(node->right == NULL, AVL_TREE_E_MEM_ALLOC,);
+            newNode = *(comp < 0 ? &node->left : &node->right) = malloc(sizeof(AvlTreeNode));
+            AvlTree_autoprintErrAndStopRunIf(newNode == NULL, AVL_TREE_E_MEM_ALLOC,);
 
-            *node->right = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
+            *newNode = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
 
-            node = node->right;
+            AvlTree_updateHeight(newNode);
+            AvlTree_balance(newNode);
         }
     }
 
-    if (pNewNode != NULL) *pNewNode = node;
-
-
-    AvlTree_updateHeight(node);
-    AvlTree_balance(node);
+    if (pNewNode != NULL) *pNewNode = newNode;
 
     return AVL_TREE_E_OK;
 }
