@@ -1,6 +1,5 @@
 #include "avl-tree.h"
 
-#include <stdbool.h>
 #include <stdlib.h>
 
 
@@ -322,7 +321,6 @@ static AvlTreeErrCode AvlTree_removeItemWithCopies(AvlTree *this, void *item) {
 
 /*--------------------------------------------- Traverse Through AVL Tree --------------------------------------------*/
 
-// TODO : Implement a non-recursive DFS
 static void AvlTree_dfs(AvlTreeNode *node, void *externalData, AvlTreeTraverserF traverserF) {
     if (node->left != NULL) AvlTree_dfs(node->left, externalData, traverserF);
     traverserF(externalData, node);
@@ -342,7 +340,6 @@ static AvlTreeErrCode AvlTree_traverse(AvlTree *this, void *externalData, AvlTre
 
 /*-------------------------------------------------- Clear AVL Tree --------------------------------------------------*/
 
-// TODO : Implement a non-recursive way to free the nodes
 static void AvlTree_recursiveNodeFree(AvlTreeNode *node, AvlTreeItemFreeF freeF) {
     if (node->left != NULL) AvlTree_recursiveNodeFree(node->left, freeF);
     if (node->right != NULL) AvlTree_recursiveNodeFree(node->right, freeF);
