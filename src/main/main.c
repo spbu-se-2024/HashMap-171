@@ -2,7 +2,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
-#include "hash-functions/hash-function.h"
+#include <ctype.h>
 #include "multiset/multiset.h"
 
 typedef struct {
@@ -66,28 +66,53 @@ int parse_arguments(inputData_t *inputData, size_t arguments_number, char **argu
 #undef SUPPORTED_FILE_FORMAT
 #undef HASH_FUNC_NUM
 
+/*-------------------------------------------------- read ------------------------------------------------------------*/
+
+/*
+ * char *filename = "text.txt";
+    FILE *file;
+    file = fopen(filename, "r");
+    if (file == NULL) return 6; // File not found
+    char c;
+    char word[sizeof(size_t) + 1] = {0};
+    size_t count = 0;
+    while ((c = (char)fgetc(file)) != EOF) {
+        if (isalpha(c)){
+            word[count++] = c;
+        }else{
+            if (count != 0) {
+                word[count] = '\0';
+                printf("%s\n", word);
+            }
+            count = 0;
+        }
+    }
+    if (count){
+        word[++count] = '\0';
+        printf("%s\n", word);
+    }
+    fclose(file);
+ */
+
 /*-------------------------------------------------- Main ------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
     inputData_t inputData;
 
-    if (!parse_arguments(&inputData, argc - 1, argv + 1)) return -1;
+    //if (!parse_arguments(&inputData, argc - 1, argv + 1)) return -1;
 
-    char *filename = "text.txt";
-    FILE *file;
-    file = fopen(filename, "r");
-    if (file == NULL) return 6; // File not found
+    inputData.config.hashFuncLabel = 0;
+    inputData.config.size = 1000;
 
-    fclose(file);
-
-
-    Multiset *table;
-    //Multiset_allocMultiset(&table, inputData.config);
-    Multiset_initMultiset((Multiset *) &table, inputData.config);
-
-    //Multiset_freeMultiset(&table);
-    Multiset_eraseMultiset((Multiset *) &table);
-
+    Multiset table, *pTable = &table;
+    Multiset_initMultiset(pTable, inputData.config);
+    pTable->addItem(pTable, "fgh");
+    pTable->addItem(pTable, "jkj");
+    MultisetStats stats;
+    pTable->getStatistics(pTable, &stats);
+    printf("size : %ld\nunique : %ld\nmax : %s\nmax len : %ld\n", stats.itemsCount, stats.uniqueItemsCount,
+           stats.maxCountWord, stats.maxCount);
+    Multiset_eraseMultiset(pTable);
     return 0;
 }
 
