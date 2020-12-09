@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include "multiset/multiset.h"
 
 typedef struct {
@@ -66,53 +67,65 @@ int parse_arguments(inputData_t *inputData, size_t arguments_number, char **argu
 #undef SUPPORTED_FILE_FORMAT
 #undef HASH_FUNC_NUM
 
-/*-------------------------------------------------- read ------------------------------------------------------------*/
+/*------------------------------------------------ Read File ---------------------------------------------------------*/
 
-/*
- * char *filename = "text.txt";
+int readFile(Multiset *pTable, char *filename){
     FILE *file;
     file = fopen(filename, "r");
     if (file == NULL) return 6; // File not found
+
     char c;
-    char word[sizeof(size_t) + 1] = {0};
+    char word[sizeof(size_t)];
     size_t count = 0;
     while ((c = (char)fgetc(file)) != EOF) {
         if (isalpha(c)){
             word[count++] = c;
         }else{
             if (count != 0) {
-                word[count] = '\0';
-                printf("%s\n", word);
+                word[count++] = '\0';
+                char item[count];
+                strncpy(item, word, count);
+                if (pTable->addItem(pTable, item)) return 7; // func err
+                //printf("%s\n", item);
             }
             count = 0;
         }
     }
     if (count){
-        word[++count] = '\0';
-        printf("%s\n", word);
+        word[count++] = '\0';
+        char item[count];
+        strncpy(item, word, count);
+        if (pTable->addItem(pTable, item)) return 7; // func err
     }
     fclose(file);
- */
+    return 0;
+}
 
 /*-------------------------------------------------- Main ------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
     inputData_t inputData;
+    //if (parse_arguments(&inputData, argc - 1, argv + 1)) return -1;
 
-    //if (!parse_arguments(&inputData, argc - 1, argv + 1)) return -1;
-
+    inputData.filename = "text.txt";
+    inputData.config.size = 100;
     inputData.config.hashFuncLabel = 0;
-    inputData.config.size = 1000;
 
     Multiset table, *pTable = &table;
     Multiset_initMultiset(pTable, inputData.config);
-    pTable->addItem(pTable, "fgh");
-    pTable->addItem(pTable, "jkj");
+
+
+
+    if (readFile(pTable, inputData.filename)) return -1;
+
+
     MultisetStats stats;
     pTable->getStatistics(pTable, &stats);
     printf("size : %ld\nunique : %ld\nmax : %s\nmax len : %ld\n", stats.itemsCount, stats.uniqueItemsCount,
            stats.maxCountWord, stats.maxCount);
     Multiset_eraseMultiset(pTable);
+
+
     return 0;
 }
 
