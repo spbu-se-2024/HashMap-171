@@ -245,6 +245,9 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
         *newNode = (AvlTreeNode) {item, .count = times, .height = 1};
 
         this->_tree = newNode;
+
+        this->itemsCount = times;
+        this->uniqueItemsCount = 1;
     } else {
         int comp = this->_compF(item, node->item);
 
@@ -253,6 +256,8 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
             newNode->count += times;
             if (this->_freeF != NULL) this->_freeF(item);
+
+            this->itemsCount += times;
         } else {
             newNode = *(comp < 0 ? &node->left : &node->right) = malloc(sizeof(AvlTreeNode));
             AvlTree_autoprintErrAndStopRunIf(newNode == NULL, AVL_TREE_E_MEM_ALLOC,);
@@ -261,6 +266,9 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
             AvlTree_updateHeightRecursively(newNode);
             AvlTree_balance(this, newNode);
+
+            this->itemsCount += times;
+            this->uniqueItemsCount += 1;
         }
     }
 

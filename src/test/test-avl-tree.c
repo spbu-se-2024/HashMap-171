@@ -482,7 +482,7 @@ static void TestAvlTree_Int_AddCountUnique_CountUniqueCorrectly(CuTest *tc) {
     int ints[4] = {3, 2, 1, 3};
     const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
 
-    for (size_t i = 0; i < intsNum; i++) {
+    for (size_t i = 0; i < intsNum - 1; i++) {
         avlTree.addItem(&avlTree, &ints[i], NULL);
         CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
     }
@@ -549,7 +549,7 @@ static void TestAvlTree_Int_AddRemoveCountMixed_CountMixedCorrectly(CuTest *tc) 
     for (size_t i = 6; i < intsNum; i++) {
         avlTree.addItem(&avlTree, &ints[i], NULL);
         CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
-        CuAssertTrue(tc, avlTree.uniqueItemsCount < avlTree.uniqueItemsCount);
+        CuAssertTrue(tc, avlTree.uniqueItemsCount < avlTree.itemsCount);
     }
     CuAssertIntEquals(tc, 13, avlTree.uniqueItemsCount);
 
@@ -588,8 +588,8 @@ static void TestAvlTree_Int_AddRemoveMixedCountMixed_CountMixedCorrectly(CuTest 
     }
     for (size_t i = 0; i < intsNum - 1; i++) {
         avlTree.removeItemWithCopies(&avlTree, &ints[i]);
-        CuAssertIntEquals(tc, (intsNum - 1 - i) * 2, avlTree.itemsCount);
-        CuAssertIntEquals(tc, intsNum - 1 - i, avlTree.uniqueItemsCount);
+        CuAssertIntEquals(tc, (intsNum - 2 - i) * 2, avlTree.itemsCount);
+        CuAssertIntEquals(tc, intsNum - 2 - i, avlTree.uniqueItemsCount);
     }
     avlTree.addItem(&avlTree, &ints[intsNum - 1], NULL);
     CuAssertIntEquals(tc, 1, avlTree.itemsCount);
