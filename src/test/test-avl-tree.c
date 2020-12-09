@@ -3,7 +3,6 @@
 #include "../main/avl-tree/avl-tree.h"
 
 #include <string.h>
-#include <stdint.h>
 
 static int cmpInt(void *a, void *b);
 
@@ -26,12 +25,12 @@ static void TestAvlTree_ErrCodes_NullItemCompPtr_ReturnNullArgErr(CuTest *tc) {
 static void TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, dummyFunc);
-    int dummyInt;
-    AvlTreeNode *dummyNodePtr;
+    int dummyInt = 1;
+    AvlTreeNode dummyNode = {0}, *dummyNodePtr = &dummyNode;
     CuAssertIntEquals_Msg(tc, "findItem failed", AVL_TREE_E_NULL_THIS, avlTree.findItem(NULL, &dummyInt, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "findClosestItem failed", AVL_TREE_E_NULL_THIS, avlTree.findClosestItem(NULL, &dummyInt, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "prevNode failed", AVL_TREE_E_NULL_THIS, avlTree.prevNode(NULL, dummyNodePtr, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "nextNode failed", AVL_TREE_E_NULL_THIS, avlTree.nextNode(NULL, dummyNodePtr, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "prevNode failed", AVL_TREE_E_NULL_THIS, avlTree.prevNode(NULL, &dummyNode, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "nextNode failed", AVL_TREE_E_NULL_THIS, avlTree.nextNode(NULL, &dummyNode, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "addItem failed", AVL_TREE_E_NULL_THIS, avlTree.addItem(NULL, &dummyInt, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "addItemTimes failed", AVL_TREE_E_NULL_THIS, avlTree.addItemTimes(NULL, &dummyInt, 1, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "removeItem failed", AVL_TREE_E_NULL_THIS, avlTree.removeItem(NULL, &dummyInt));
@@ -164,21 +163,21 @@ static void TestAvlTree_Int_AddRemove_IsCorrectBST2(CuTest *tc) {
 
     for (size_t i = 0; i < intsNum / 2; i++) {
         avlTree.addItem(&avlTree, &ints[i], NULL);
-        CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     }
     avlTree.removeItem(&avlTree, &ints[0]);
-    CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     for (size_t i = intsNum / 2; i < intsNum; i++) {
         avlTree.addItem(&avlTree, &ints[i], NULL);
         CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     }
     avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
-    CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
 
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_RemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -228,6 +227,77 @@ static void TestAvlTree_Int_RemoveUnadded_IsCorrectBST(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
+static void TestAvlTree_Int_AddRemoveWithCopies_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[5] = {0, -2, -2, -2, 1};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    avlTree.addItemTimes(&avlTree, &ints[0], 2, NULL);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    for (size_t i = 1; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItemWithCopies(&avlTree, &ints[0]);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    avlTree.removeItemWithCopies(&avlTree, &ints[1]);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_RemoveWithCopiesSingle_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[2] = {222, -345};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItemWithCopies(&avlTree, &ints[0]);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    avlTree.removeItemWithCopies(&avlTree, &ints[1]);
+    CuAssertTrue(tc, intsNum == 2 && avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_RemoveWithCopiesUnadded_IsCorrectBST(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[6] = {267, 999, -5, 10000, 999, -7}, unaddedInt1 = 0, unaddedInt2 = -6;
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    avlTree.removeItemWithCopies(&avlTree, &unaddedInt1);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItemWithCopies(&avlTree, &unaddedInt1);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    for (size_t i = 0; i < intsNum - 1; i++) {
+        avlTree.removeItemWithCopies(&avlTree, &ints[i]);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+        avlTree.removeItem(&avlTree, &unaddedInt2);
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    }
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+    avlTree.removeItem(&avlTree, &unaddedInt1);
+    CuAssertTrue(tc, avlTree._tree == NULL);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
 static void TestAvlTree_Int_MixedOperations_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
@@ -253,10 +323,14 @@ static void TestAvlTree_Int_MixedOperations_IsCorrectBST(CuTest *tc) {
     CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     for (size_t i = 0; i < intsNum; i++) {
         avlTree.removeItem(&avlTree, &ints[i]);
-        CuAssertTrue(tc, (intsNum == 1 && avlTree._tree == NULL) || isCorrectBST(avlTree._tree, avlTree._compF));
+        CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
         avlTree.addItem(&avlTree, &ints[i], NULL);
         CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     }
+    avlTree.addItemTimes(&avlTree, &ints[0], 22, NULL);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
+    avlTree.removeItemWithCopies(&avlTree, &ints[0]);
+    CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
     avlTree.removeItem(&avlTree, &unaddedInt);
     CuAssertTrue(tc, isCorrectBST(avlTree._tree, avlTree._compF));
 
@@ -399,8 +473,11 @@ CuSuite *AvlTreeGetSuite() {
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddWithDuplicates_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST2);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithDuplicates_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveUnadded_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithCopies_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithCopiesSingle_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithCopiesUnadded_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_MixedOperations_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_Exist);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExist1);
