@@ -177,7 +177,7 @@ static void TestAvlTree_Int_AddRemove_IsCorrectBST2(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_RemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -198,7 +198,7 @@ static void TestAvlTree_Int_RemoveWithDuplicates_IsCorrectBST(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_RemoveUnadded_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_AddRemoveUnadded_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -250,7 +250,7 @@ static void TestAvlTree_Int_AddRemoveWithCopies_IsCorrectBST(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_RemoveWithCopiesSingle_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_AddRemoveWithCopiesSingle_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -269,7 +269,7 @@ static void TestAvlTree_Int_RemoveWithCopiesSingle_IsCorrectBST(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_RemoveWithCopiesUnadded_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_AddRemoveWithCopiesUnadded_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -298,7 +298,7 @@ static void TestAvlTree_Int_RemoveWithCopiesUnadded_IsCorrectBST(CuTest *tc) {
     AvlTree_eraseAvlTree(&avlTree);
 }
 
-static void TestAvlTree_Int_MixedOperations_IsCorrectBST(CuTest *tc) {
+static void TestAvlTree_Int_AddRemoveMixed_IsCorrectBST(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
 
@@ -458,6 +458,153 @@ static void TestAvlTree_Int_InsertFind_NotExistWithDuplicates2(CuTest *tc) {
 }
 
 
+/*-------------------------------------------- AvlTree - Int - Add - Count -------------------------------------------*/
+
+static void TestAvlTree_Int_AddCount_CountCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[3] = {1, 2, 3};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+    }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddCountUnique_CountUniqueCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[4] = {3, 2, 1, 3};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
+    }
+    avlTree.addItem(&avlTree, &ints[3], NULL);
+    CuAssertIntEquals(tc, intsNum - 1, avlTree.uniqueItemsCount);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddCountMixed_CountMixedCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[10] = {3, -1, 0, 1000, 266, 267, -100, 0, 3, 3};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum - 3; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+        CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
+    }
+    for (size_t i = intsNum - 3; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+        CuAssertIntEquals(tc, intsNum - 3, avlTree.uniqueItemsCount);
+    }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemoveCountMixedEmpty_CountZero(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int num = 9999;
+
+    CuAssertIntEquals(tc, 0, avlTree.itemsCount);
+    CuAssertIntEquals(tc, 0, avlTree.uniqueItemsCount);
+    avlTree.addItem(&avlTree, &num, NULL);
+    avlTree.removeItem(&avlTree, &num);
+    CuAssertIntEquals(tc, 0, avlTree.itemsCount);
+    CuAssertIntEquals(tc, 0, avlTree.uniqueItemsCount);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemoveCountMixed_CountMixedCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[19] = {1, 2, 3, 3, 2, 1, -888, 123, 0, 0, -9, 111, 1000, 823, 9, -9, 2, 987324, 12};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < 3; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+        CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
+    }
+    for (size_t i = 3; i < 6; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+        CuAssertIntEquals(tc, 3, avlTree.uniqueItemsCount);
+    }
+    for (size_t i = 6; i < intsNum; i++) {
+        avlTree.addItem(&avlTree, &ints[i], NULL);
+        CuAssertIntEquals(tc, i + 1, avlTree.itemsCount);
+        CuAssertTrue(tc, avlTree.uniqueItemsCount < avlTree.uniqueItemsCount);
+    }
+    CuAssertIntEquals(tc, 13, avlTree.uniqueItemsCount);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddTimesCountMixed_CountMixedCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[4] = {1000, 998, 999, -3};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+    size_t addedIntsNum = 0;
+
+    for (size_t i = 0; i < intsNum; i++) {
+        avlTree.addItemTimes(&avlTree, &ints[i], (2 * i + 1) * (i + 5), NULL);
+        addedIntsNum += (2 * i + 1) * (i + 5);
+        CuAssertIntEquals(tc, addedIntsNum, avlTree.itemsCount);
+        CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
+    }
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+static void TestAvlTree_Int_AddRemoveMixedCountMixed_CountMixedCorrectly(CuTest *tc) {
+    AvlTree avlTree;
+    AvlTree_initAvlTree(&avlTree, cmpInt, NULL);
+
+    int ints[6] = {998, 2, -2, 0, 1, 2};
+    const size_t intsNum = sizeof(ints) / sizeof(ints[0]);
+
+    for (size_t i = 0; i < intsNum - 1; i++) {
+        avlTree.addItemTimes(&avlTree, &ints[i], 2, NULL);
+        CuAssertIntEquals(tc, (i + 1) * 2, avlTree.itemsCount);
+        CuAssertIntEquals(tc, i + 1, avlTree.uniqueItemsCount);
+    }
+    for (size_t i = 0; i < intsNum - 1; i++) {
+        avlTree.removeItemWithCopies(&avlTree, &ints[i]);
+        CuAssertIntEquals(tc, (intsNum - 1 - i) * 2, avlTree.itemsCount);
+        CuAssertIntEquals(tc, intsNum - 1 - i, avlTree.uniqueItemsCount);
+    }
+    avlTree.addItem(&avlTree, &ints[intsNum - 1], NULL);
+    CuAssertIntEquals(tc, 1, avlTree.itemsCount);
+    CuAssertIntEquals(tc, 1, avlTree.uniqueItemsCount);
+    avlTree.addItemTimes(&avlTree, &ints[intsNum - 1], 999, NULL);
+    CuAssertIntEquals(tc, 1000, avlTree.itemsCount);
+    CuAssertIntEquals(tc, 1, avlTree.uniqueItemsCount);
+    avlTree.removeItem(&avlTree, &ints[intsNum - 1]);
+    CuAssertIntEquals(tc, 999, avlTree.itemsCount);
+    CuAssertIntEquals(tc, 1, avlTree.uniqueItemsCount);
+
+    AvlTree_eraseAvlTree(&avlTree);
+}
+
+
 /*------------------------------------------------------- MAIN -------------------------------------------------------*/
 
 CuSuite *AvlTreeGetSuite() {
@@ -467,24 +614,34 @@ CuSuite *AvlTreeGetSuite() {
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullItemCompPtr_ReturnNullArgErr);
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr);
     SUITE_ADD_TEST(suite, TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr);
+
     SUITE_ADD_TEST(suite, TestAvlTree_Int_Add_IsCorrectBST1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_Add_IsCorrectBST2);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddMany_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddWithDuplicates_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemove_IsCorrectBST2);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithDuplicates_IsCorrectBST);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveUnadded_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithDuplicates_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveUnadded_IsCorrectBST);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithCopies_IsCorrectBST);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithCopiesSingle_IsCorrectBST);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_RemoveWithCopiesUnadded_IsCorrectBST);
-    SUITE_ADD_TEST(suite, TestAvlTree_Int_MixedOperations_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithCopiesSingle_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveWithCopiesUnadded_IsCorrectBST);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveMixed_IsCorrectBST);
+
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_Exist);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExist1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExist2);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_ExistWithDuplicates);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExistWithDuplicates1);
     SUITE_ADD_TEST(suite, TestAvlTree_Int_InsertFind_NotExistWithDuplicates2);
+
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddCount_CountCorrectly);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddCountUnique_CountUniqueCorrectly);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddCountMixed_CountMixedCorrectly);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveCountMixedEmpty_CountZero);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveCountMixed_CountMixedCorrectly);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddTimesCountMixed_CountMixedCorrectly);
+    SUITE_ADD_TEST(suite, TestAvlTree_Int_AddRemoveMixedCountMixed_CountMixedCorrectly);
 
     return suite;
 }
