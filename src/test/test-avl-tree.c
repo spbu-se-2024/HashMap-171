@@ -25,8 +25,10 @@ static void TestAvlTree_ErrCodes_NullItemCompPtr_ReturnNullArgErr(CuTest *tc) {
 static void TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, dummyFunc);
+
     int dummyInt = 1;
     AvlTreeNode dummyNode = {0}, *dummyNodePtr = &dummyNode;
+
     CuAssertIntEquals_Msg(tc, "findItem failed", AVL_TREE_E_NULL_THIS, avlTree.findItem(NULL, &dummyInt, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "findClosestItem failed", AVL_TREE_E_NULL_THIS, avlTree.findClosestItem(NULL, &dummyInt, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "prevNode failed", AVL_TREE_E_NULL_THIS, avlTree.prevNode(NULL, &dummyNode, &dummyNodePtr));
@@ -42,8 +44,10 @@ static void TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr(CuTest *tc) {
 static void TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr(CuTest *tc) {
     AvlTree avlTree;
     AvlTree_initAvlTree(&avlTree, cmpInt, dummyFunc);
+
     int dummyInt;
     AvlTreeNode *dummyNodePtr;
+
     CuAssertIntEquals_Msg(tc, "findItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.findItem(&avlTree, NULL, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "findItem failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.findItem(&avlTree, &dummyInt, NULL));
     CuAssertIntEquals_Msg(tc, "findClosestItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.findClosestItem(&avlTree, NULL, &dummyNodePtr));
