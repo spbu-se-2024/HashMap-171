@@ -9,7 +9,41 @@
 typedef struct {
     char *filename;
     MultisetConfig config;
-} inputData_t;
+} InputData;
+
+
+
+
+/*-------------------------------------------------------- Vector ----------------------------------------------------*/
+
+typedef struct {
+    char *buf;
+    size_t cap;
+    size_t size;
+} Vector;
+
+Vector *init_vector(size_t cap){
+    Vector *vector = malloc(sizeof(Vector));
+    if (vector == NULL) return NULL;
+    vector->cap = cap;
+    vector->buf = malloc(cap); //проверка cap
+    vector->size = 0;
+    return vector;
+}
+
+void push_vector(const char *s, size_t word_len, Vector vector) {
+    while (vector.size + word_len + 1 > vector.cap) vector.cap *= 2;
+    vector.buf = realloc(vector.buf, vector.cap);
+    for (size_t i = 0; i < word_len; i++) {
+        vector.buf[vector.size++] = s[i];
+    }
+    vector.buf[vector.size++] = '\0';
+}
+
+void erase_vector(Vector *vector){
+    free(vector->buf);
+    vector->buf = NULL;
+}
 
 /*-------------------------------------------------- Hash Functions --------------------------------------------------*/
 
@@ -24,14 +58,13 @@ static const char *const HASH_FUNC_NAMES[] = {
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
 #define KEY_LEN 7
-#define SUPPORTED_FILE_FORMAT ".txt"
 
 static const char *const KEY_SIZE = "--size=";
 static const char *const KEY_HASH = "--hash=";
 static const char *const KEY_HELP = "--help";
 
-int parse_arguments(inputData_t *inputData, size_t arguments_number, char **arguments) {
-    *inputData = (inputData_t) {0};
+int parse_arguments(InputData *inputData, size_t arguments_number, char **arguments) {
+    *inputData = (InputData) {0};
 
     if (arguments_number == 3) {
 
@@ -64,38 +97,30 @@ int parse_arguments(inputData_t *inputData, size_t arguments_number, char **argu
 }
 
 #undef KEY_LEN
-#undef SUPPORTED_FILE_FORMAT
 #undef HASH_FUNC_NUM
 
 /*------------------------------------------------ Read File ---------------------------------------------------------*/
 
-int readFile(Multiset *pTable, char *filename){
+int readFile(Vector vector, char *filename) {
     FILE *file;
     file = fopen(filename, "r");
     if (file == NULL) return 6; // File not found
 
     char c;
-    char word[sizeof(size_t)];
+    char word[1000];
     size_t count = 0;
-    while ((c = (char)fgetc(file)) != EOF) {
-        if (isalpha(c)){
+    while ((c = (char) fgetc(file)) != EOF) {
+        if (isalpha(c)) {
             word[count++] = c;
-        }else{
+        } else {
             if (count != 0) {
-                word[count++] = '\0';
-                char item[count];
-                strncpy(item, word, count);
-                if (pTable->addItem(pTable, item)) return 7; // func err
-                //printf("%s\n", item);
+                push_vector(word, count, vector);
             }
             count = 0;
         }
     }
-    if (count){
-        word[count++] = '\0';
-        char item[count];
-        strncpy(item, word, count);
-        if (pTable->addItem(pTable, item)) return 7; // func err
+    if (count) {
+        push_vector(word, count, vector);
     }
     fclose(file);
     return 0;
@@ -103,36 +128,41 @@ int readFile(Multiset *pTable, char *filename){
 
 /*-------------------------------------------------- Main ------------------------------------------------------------*/
 
-int main(int argc, char *argv[]) {
-    inputData_t inputData;
-    //if (parse_arguments(&inputData, argc - 1, argv + 1)) return -1;
+void name_func(Vector *vector, Multiset *table){
+    size_t vsize = vector->size;
+    size_t i = 0;
+    char *word;
+    while (i < vsize) {
+        word = vector->buf + i;
+        while (vector->buf[i] != '\0') i++;
+        table->addItem(table, word);
+        i++;
+    }
+}
 
-    inputData.filename = "text.txt";
-    inputData.config.size = 100;
-    inputData.config.hashFuncLabel = 0;
+/*-------------------------------------------------- Main ------------------------------------------------------------*/
+
+int main(int argc, char *argv[]) {
+    InputData inputData;
+    if (parse_arguments(&inputData, argc - 1, argv + 1)) return EXIT_FAILURE;
+
 
     Multiset table, *pTable = &table;
     Multiset_initMultiset(pTable, inputData.config);
 
-
-
-    if (readFile(pTable, inputData.filename)) return -1;
-
+    Vector vector = *init_vector(16);
+    if (readFile(vector, inputData.filename)) return EXIT_FAILURE;
+    clock_t begin = clock();
+    name_func(&vector, pTable);
+    clock_t end = clock();
+    double time = (double) (end - begin) / CLOCKS_PER_SEC;
 
     MultisetStats stats;
     pTable->getStatistics(pTable, &stats);
-    printf("size : %ld\nunique : %ld\nmax : %s\nmax len : %ld\n", stats.itemsCount, stats.uniqueItemsCount,
-           stats.maxCountWord, stats.maxCount);
+    printf("size : %ld\nunique : %ld\nmax : %s\nmax len : %ld\ntime : %lf\n", stats.itemsCount, stats.uniqueItemsCount,
+           stats.maxCountWord, stats.maxCount, time);
     Multiset_eraseMultiset(pTable);
 
 
     return 0;
 }
-
-
-
-/*
-        clock_t begin = clock();
-        clock_t end = clock();
-        double time = (double) (end - begin) / CLOCKS_PER_SEC;
- */
