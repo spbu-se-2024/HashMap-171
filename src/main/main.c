@@ -2,8 +2,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
+
 #include "multiset/multiset.h"
 
 typedef struct {
@@ -11,132 +10,75 @@ typedef struct {
     MultisetConfig config;
 } InputData;
 
-
-
-
-/*-------------------------------------------------------- Vector ----------------------------------------------------*/
-
-typedef struct {
-    char *buf;
-    size_t cap;
-    size_t size;
-} Vector;
-
-Vector *init_vector(size_t cap){
-    Vector *vector = malloc(sizeof(Vector));
-    if (vector == NULL) return NULL;
-    vector->cap = cap;
-    vector->buf = malloc(cap); //проверка cap
-    vector->size = 0;
-    return vector;
-}
-
-void push_vector(const char *s, size_t word_len, Vector vector) {
-    while (vector.size + word_len + 1 > vector.cap) vector.cap *= 2;
-    vector.buf = realloc(vector.buf, vector.cap);
-    for (size_t i = 0; i < word_len; i++) {
-        vector.buf[vector.size++] = s[i];
-    }
-    vector.buf[vector.size++] = '\0';
-}
-
-void erase_vector(Vector *vector){
-    free(vector->buf);
-    vector->buf = NULL;
-}
-
-/*-------------------------------------------------- Hash Functions --------------------------------------------------*/
-
-static const char *const HASH_FUNC_NAMES[] = {
-        "md5",
-        "polynomial",
-        "sha-1",
-};
-
-#define HASH_FUNC_NUM 3
-
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
-#define KEY_LEN 7
+#define EXPECTED_ARGS_NUM 3
+#define SUPPORTED_FORMAT ".txt"
+#define HASH_FUNCS_NAMES {"md5","polynomial","sha-1"}
+#define HASH_FUNCS_NUM 3
 
-static const char *const KEY_SIZE = "--size=";
-static const char *const KEY_HASH = "--hash=";
-static const char *const KEY_HELP = "--help";
+static _Bool isStrEnding(const char* const str, const char* const ending) {
+    const size_t str_len = strlen(str), ending_len = strlen(ending);
+    return (str_len >= ending_len && strcmp(str + str_len - ending_len, ending) == 0);
+}
 
-int parse_arguments(InputData *inputData, size_t arguments_number, char **arguments) {
+int parseClArgs(InputData *inputData, size_t argsNum, char **args) {
     *inputData = (InputData) {0};
 
-    if (arguments_number == 3) {
-
-        if (arguments[1] == NULL) return 1; // Wrong filename extension
-        inputData->filename = arguments[0];
-
-        if (strncmp(arguments[1], KEY_SIZE, KEY_LEN) != 0) return 2; // Wrong size key (argv[2])
-        inputData->config.size = (size_t) strtoll(arguments[1] + KEY_LEN, NULL, 10);
-        if (inputData->config.size == 0) return 7; // size != 0
-
-        if (strncmp(arguments[2], KEY_HASH, KEY_LEN) != 0) return 3; // Wrong hash key (argv[3])
-        char *hashName = arguments[2] + KEY_LEN;
-        int isNameCorrect = 0;
-        for (size_t i = 0; i < HASH_FUNC_NUM; i++) {
-            if (strcmp(hashName, HASH_FUNC_NAMES[i]) == 0) {
-                inputData->config.hashFuncLabel = i;
-                isNameCorrect = 1;
-                break;
-            }
-        }
-        if (!isNameCorrect) return 4; // Wrong name hash
-
-    } else if (arguments_number == 1 && strcmp(arguments[0], KEY_HELP) == 0) {
-        printf("documentation\n");
-    } else {
-        printf("try: --help\n");
-        return 5; // Wrong keys number
+    if (argsNum != EXPECTED_ARGS_NUM + 1) {
+        return 1; // Unexpected args number
     }
+    inputData->filename = args[1];
+    if (!isStrEnding(inputData->filename, SUPPORTED_FORMAT)) {
+        return 2; // Unsupported file extension
+    }
+    inputData->config.size = strtoul(args[2], NULL, 10);
+    if (inputData->config.size == 0 || !('0' <= args[2][0] && args[2][0] <= '9')) {
+        return 3; // Unsupported size
+    }
+    const char* hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
+    _Bool hashFuncGiven = 0;
+    for (unsigned int i = MULTISET_HASH_FUNC_LABEL_MD5; i <= MULTISET_HASH_FUNC_LABEL_SHA_1; i++) {
+        if (strcmp(args[3], hashFuncsNames[i - MULTISET_HASH_FUNC_LABEL_MD5]) == 0) {
+            inputData->config.hashFuncLabel = i;
+            hashFuncGiven = 1;
+        }
+    }
+    if (!hashFuncGiven) {
+        return 4; // Unsupported hash function
+    }
+
     return 0;
 }
 
-#undef KEY_LEN
-#undef HASH_FUNC_NUM
+#undef EXPECTED_ARGS_NUM
+#undef SUPPORTED_FORMAT
+#undef HASH_FUNCS_NAMES
+#undef HASH_FUNCS_NUM
 
 /*------------------------------------------------ Read File ---------------------------------------------------------*/
 
-int readFile(Vector vector, char *filename) {
+int readFile(char *filename, char** fileContentsContainer) {
     FILE *file;
     file = fopen(filename, "r");
     if (file == NULL) return 6; // File not found
 
-    char c;
-    char word[1000];
-    size_t count = 0;
-    while ((c = (char) fgetc(file)) != EOF) {
-        if (isalpha(c)) {
-            word[count++] = c;
-        } else {
-            if (count != 0) {
-                push_vector(word, count, vector);
-            }
-            count = 0;
-        }
-    }
-    if (count) {
-        push_vector(word, count, vector);
-    }
+    fseek(file, 0, SEEK_END);
+    long fileSize = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    *fileContentsContainer = (char*) malloc((fileSize + 1) * sizeof(char));
+    fread(*fileContentsContainer, fileSize, 1, file);
     fclose(file);
+    (*fileContentsContainer)[fileSize] = '\0';
+
     return 0;
 }
 
-/*-------------------------------------------------- Main ------------------------------------------------------------*/
-
-void name_func(Vector *vector, Multiset *table){
-    size_t vsize = vector->size;
-    size_t i = 0;
-    char *word;
-    while (i < vsize) {
-        word = vector->buf + i;
-        while (vector->buf[i] != '\0') i++;
-        table->addItem(table, word);
-        i++;
+void fillHashTable(Multiset *hashTable, char *contents) {
+    char *word = strtok(contents, " ");
+    while (word != NULL) {
+        hashTable->addItem(hashTable, word);
+        word = strtok(NULL, " ");
     }
 }
 
@@ -144,25 +86,31 @@ void name_func(Vector *vector, Multiset *table){
 
 int main(int argc, char *argv[]) {
     InputData inputData;
-    if (parse_arguments(&inputData, argc - 1, argv + 1)) return EXIT_FAILURE;
+    if (parseClArgs(&inputData, argc, argv)) return EXIT_FAILURE;
 
+    Multiset hashTable;
+    Multiset_initMultiset(&hashTable, inputData.config);
 
-    Multiset table, *pTable = &table;
-    Multiset_initMultiset(pTable, inputData.config);
+    char* fileContents = NULL;
+    if (readFile(inputData.filename, &fileContents)) return EXIT_FAILURE;
 
-    Vector vector = *init_vector(16);
-    if (readFile(vector, inputData.filename)) return EXIT_FAILURE;
     clock_t begin = clock();
-    name_func(&vector, pTable);
+    fillHashTable(&hashTable, fileContents);
     clock_t end = clock();
+
     double time = (double) (end - begin) / CLOCKS_PER_SEC;
 
     MultisetStats stats;
-    pTable->getStatistics(pTable, &stats);
-    printf("size : %ld\nunique : %ld\nmax : %s\nmax len : %ld\ntime : %lf\n", stats.itemsCount, stats.uniqueItemsCount,
-           stats.maxCountWord, stats.maxCount, time);
-    Multiset_eraseMultiset(pTable);
+    hashTable.getStatistics(&hashTable, &stats);
+    printf("size : %ld\n"
+           "unique : %ld\n"
+           "max : %s\n"
+           "max len : %ld\n"
+           "time : %lf\n",
+           stats.itemsCount, stats.uniqueItemsCount, stats.maxCountWord, stats.maxCount, time);
 
+    Multiset_eraseMultiset(&hashTable);
+    free(fileContents);
 
     return 0;
 }
