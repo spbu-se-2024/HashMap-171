@@ -5,6 +5,8 @@
 
 #include "multiset/multiset.h"
 
+#define printErr(errMsg) fprintf(stderr, errMsg)
+
 typedef struct {
     char *filename;
     MultisetConfig config;
@@ -16,13 +18,19 @@ typedef struct {
 #define HASH_FUNCS_NUM 3
 #define HASH_FUNCS_NAMES {"md5","polynomial","sha-1"}
 
-int parseClArgs(InputData *inputData, size_t argc, char **argv) {
-    if (argc != EXPECTED_CL_ARGS_NUM + 1) return 1; // Unexpected argv number
+unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
+    if (argc != EXPECTED_CL_ARGS_NUM + 1) {
+        printErr("Unexpected number of arguments\n");
+        return 1;
+    }
 
     inputData->filename = argv[1];
 
     inputData->config.size = strtoul(argv[2], NULL, 10);
-    if (inputData->config.size == 0 || !('0' <= argv[2][0] && argv[2][0] <= '9')) return 2; // Unsupported size
+    if (inputData->config.size == 0 || !('0' <= argv[2][0] && argv[2][0] <= '9')) {
+        printErr("Invalid hash table size given (must be positive)\n");
+        return 1;
+    }
 
     const char* hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
     _Bool isHashFuncGiven = 0;
@@ -32,7 +40,10 @@ int parseClArgs(InputData *inputData, size_t argc, char **argv) {
             isHashFuncGiven = 1;
         }
     }
-    if (!isHashFuncGiven) return 3; // Unsupported hash function
+    if (!isHashFuncGiven) {
+        printErr("Unsupported hash function name given (must be md5, polynomial or sha-1)\n");
+        return 1;
+    }
 
     return 0;
 }
@@ -43,44 +54,57 @@ int parseClArgs(InputData *inputData, size_t argc, char **argv) {
 
 /*------------------------------------------------ Read File ---------------------------------------------------------*/
 
-int readFile(char *filename, char** fileContentsContainer) {
+#define closeFileAfterErr(file) if (fclose(file) != 0) printErr("Also failed to close the file\n")
+
+unsigned int readFile(char *filename, char** fileContentsContainer) {
     FILE *file;
     file = fopen(filename, "r");
-    if (file == NULL) return 4; // Filed to open file
+    if (file == NULL) {
+        printErr("Failed to open given file\n");
+        return 1;
+    }
 
     if (fseek(file, 0, SEEK_END)) {
-        if (fclose(file) != 0) return 5; // file reading failed
-        return 5; // file reading failed
+        printErr("Failed to read given file (fseek failed)\n");
+        closeFileAfterErr(file);
+        return 1;
     }
     const long fileSize = ftell(file);
     if (fileSize == -1) {
-        if (fclose(file) != 0) return 5; // file reading failed
-        return 5; // file reading failed
+        printErr("Failed to read given file (ftell failed)\n");
+        closeFileAfterErr(file);
+        return 1;
     }
     if (fseek(file, 0, SEEK_SET)) {
-        if (fclose(file) != 0) return 5; // file reading failed
-        return 5; // file reading failed
+        printErr("Failed to read given file (fseek failed)\n");
+        closeFileAfterErr(file);
+        return 1;
     }
 
     *fileContentsContainer = (char*) malloc((fileSize + 1) * sizeof(char));
     if (*fileContentsContainer == NULL) {
-        if (fclose(file) != 0) return 5; // file reading failed
-        return 6;  // malloc failed
+        printErr("Failed to allocate memory for contents of the given file\n");
+        closeFileAfterErr(file);
+        return 1;
     }
     (*fileContentsContainer)[fileSize] = '\0';
     if (fread(*fileContentsContainer, fileSize, 1, file) != 1) {
+        printErr("Failed to read given file (fread failed)\n");
         free(*fileContentsContainer);
-        if (fclose(file) != 0) return 5; // file reading failed
-        return 5; // file reading failed
+        closeFileAfterErr(file);
+        return 1;
     }
 
     if (fclose(file) != 0) {
+        printErr("Failed to close given file after reading\n");
         free(*fileContentsContainer);
-        return 5; // file reading failed
+        return 1;
     }
 
     return 0;
 }
+
+#undef closeFileAfterErr
 
 /*---------------------------------------------- Fill Multiset -------------------------------------------------------*/
 
@@ -102,7 +126,10 @@ int main(int argc, char *argv[]) {
     if (Multiset_initMultiset(&hashTable, inputData.config) != MULTISET_E_OK) return EXIT_FAILURE;
 
     char* fileContents = NULL;
-    if (readFile(inputData.filename, &fileContents)) return EXIT_FAILURE;
+    if (readFile(inputData.filename, &fileContents)) {
+        Multiset_eraseMultiset(&hashTable);
+        return EXIT_FAILURE;
+    }
 
     const clock_t begin = clock();
     fillHashTable(&hashTable, fileContents);
@@ -111,6 +138,7 @@ int main(int argc, char *argv[]) {
 
     MultisetStats stats;
     if (hashTable.getStatistics(&hashTable, &stats) != MULTISET_E_OK) {
+        Multiset_eraseMultiset(&hashTable);
         free(fileContents);
         return EXIT_FAILURE;
     }
@@ -126,3 +154,5 @@ int main(int argc, char *argv[]) {
 
     return EXIT_SUCCESS;
 }
+
+#undef printErr
