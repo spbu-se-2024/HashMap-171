@@ -41,15 +41,76 @@ static AvlTreeErrCode AvlTree_findMaxItem(AvlTree *this, AvlTreeNode **pMaxItemN
 
 /*------------------------------------------------- Balance AVL Tree -------------------------------------------------*/
 
-static void AvlTree_updateHeight(AvlTreeNode *node) {
-    if (node == NULL) return;
+static inline void AvlTree_updateHeight(AvlTreeNode *node) {
     node->height = AvlTree_maxSizeT(AvlTree_getNodeHeight(node->left), AvlTree_getNodeHeight(node->right)) + 1;
-    AvlTree_updateHeight(node->parent);
 }
 
-// TODO : Implement balance
-static void AvlTree_balance(AvlTreeNode *node) {
-    (void) node;
+static void AvlTree_updateHeightRecursively(AvlTreeNode *node) {
+    if (node == NULL) return;
+    AvlTree_updateHeight(node);
+    AvlTree_updateHeightRecursively(node->parent);
+}
+
+
+static inline void AvlTree_rotateLeft(AvlTreeNode *node) {
+    AvlTreeNode *nodeP = node->parent;
+    AvlTreeNode *nodeA = node;
+    AvlTreeNode *nodeB = node->right;
+    AvlTreeNode *treeB = node->right->left;
+
+
+    nodeA->parent = nodeB;
+    nodeB->left = nodeA;
+
+    nodeB->parent = nodeP;
+    if (nodeP != NULL) *(nodeP->left == nodeA ? &nodeP->left : &nodeP->right) = nodeB;
+
+    nodeA->right = treeB;
+    if (treeB != NULL) treeB->parent = nodeA;
+
+    AvlTree_updateHeightRecursively(nodeA);
+}
+
+static inline void AvlTree_rotateRight(AvlTreeNode *node) {
+    AvlTreeNode *nodeP = node->parent;
+    AvlTreeNode *nodeA = node;
+    AvlTreeNode *nodeB = node->left;
+    AvlTreeNode *treeB = node->left->right;
+
+
+    nodeA->parent = nodeB;
+    nodeB->right = nodeA;
+
+    nodeB->parent = nodeP;
+    if (nodeP != NULL) *(nodeP->left == nodeA ? &nodeP->left : &nodeP->right) = nodeB;
+
+    nodeA->left = treeB;
+    if (treeB != NULL) treeB->parent = nodeA;
+
+    AvlTree_updateHeightRecursively(nodeA);
+}
+
+static void AvlTree_balance(AvlTree *avlTree, AvlTreeNode *node) {
+    if (node == NULL) return;
+
+    size_t lChH = AvlTree_getNodeHeight(node->left);
+    size_t rChH = AvlTree_getNodeHeight(node->right);
+    if (lChH + 2 == rChH) {
+        size_t rChLChH = AvlTree_getNodeHeight(node->right->left);
+        size_t rChRChH = AvlTree_getNodeHeight(node->right->right);
+
+        if (rChLChH == rChRChH + 1) AvlTree_rotateRight(node->right);
+        AvlTree_rotateLeft(node);
+    } else if (rChH + 2 == lChH) {
+        size_t lChLChH = AvlTree_getNodeHeight(node->left->left);
+        size_t lChRChH = AvlTree_getNodeHeight(node->left->right);
+
+        if (lChRChH == lChLChH + 1) AvlTree_rotateLeft(node->left);
+        AvlTree_rotateRight(node);
+    }
+
+    if (node->parent != NULL) AvlTree_balance(avlTree, node->parent);
+    else avlTree->_tree = node;
 }
 
 
@@ -184,6 +245,9 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
         *newNode = (AvlTreeNode) {item, .count = times, .height = 1};
 
         this->_tree = newNode;
+
+        this->itemsCount = times;
+        this->uniqueItemsCount = 1;
     } else {
         int comp = this->_compF(item, node->item);
 
@@ -192,14 +256,19 @@ static AvlTreeErrCode AvlTree_addItemTimes(AvlTree *this, void *item, size_t tim
 
             newNode->count += times;
             if (this->_freeF != NULL) this->_freeF(item);
+
+            this->itemsCount += times;
         } else {
             newNode = *(comp < 0 ? &node->left : &node->right) = malloc(sizeof(AvlTreeNode));
             AvlTree_autoprintErrAndStopRunIf(newNode == NULL, AVL_TREE_E_MEM_ALLOC,);
 
             *newNode = (AvlTreeNode) {item, .count = times, .height = 1, .parent = node};
 
-            AvlTree_updateHeight(newNode);
-            AvlTree_balance(newNode);
+            AvlTree_updateHeightRecursively(newNode);
+            AvlTree_balance(this, newNode);
+
+            this->itemsCount += times;
+            this->uniqueItemsCount += 1;
         }
     }
 
@@ -275,8 +344,8 @@ static AvlTreeErrCode AvlTree_removeNode(AvlTree *this, AvlTreeNode *node) {
     if (this->_freeF != NULL) this->_freeF(node->item);
     free(node);
 
-    AvlTree_updateHeight(balancePoint);
-    AvlTree_balance(balancePoint);
+    AvlTree_updateHeightRecursively(balancePoint);
+    AvlTree_balance(this, balancePoint);
 
     return AVL_TREE_E_OK;
 }
