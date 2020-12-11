@@ -2,15 +2,15 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <ctype.h>
 #include "multiset/multiset.h"
-
-#define printErr(errMsg) fprintf(stderr, errMsg)
 
 typedef struct {
     char *filename;
     MultisetConfig config;
 } InputData;
+
+#define printErr(errMsg) fprintf(stderr, errMsg)
 
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
@@ -32,7 +32,7 @@ unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
         return 1;
     }
 
-    const char* hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
+    const char *hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
     _Bool isHashFuncGiven = 0;
     for (unsigned int i = MULTISET_HASH_FUNC_LABEL_MD5; i <= MULTISET_HASH_FUNC_LABEL_SHA_1; i++) {
         if (strcmp(argv[3], hashFuncsNames[i - MULTISET_HASH_FUNC_LABEL_MD5]) == 0) {
@@ -49,71 +49,38 @@ unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
 }
 
 #undef EXPECTED_CL_ARGS_NUM
-#undef HASH_FUNCS_NUM
-#undef HASH_FUNCS_NAMES
+
 
 /*------------------------------------------------ Read File ---------------------------------------------------------*/
 
-#define closeFileAfterErr(file) if (fclose(file) != 0) printErr("Also failed to close the file\n")
-
-unsigned int readFile(char *filename, char** fileContentsContainer) {
+int readFile(Multiset *pTable, char *filename) {
     FILE *file;
     file = fopen(filename, "r");
-    if (file == NULL) {
-        printErr("Failed to open given file\n");
-        return 1;
-    }
 
-    if (fseek(file, 0, SEEK_END)) {
-        printErr("Failed to read given file (fseek failed)\n");
-        closeFileAfterErr(file);
-        return 1;
+    char c;
+    char word[1000];
+    size_t count = 0;
+    while ((c = (char) fgetc(file)) != EOF) {
+        if (isalpha(c)) {
+            word[count++] = c;
+        } else {
+            if (count != 0) {
+                word[count++] = '\0';
+                char *item = malloc(count);
+                strncpy(item, word, count);
+                pTable->addItem(pTable, item);
+            }
+            count = 0;
+        }
     }
-    const long fileSize = ftell(file);
-    if (fileSize == -1) {
-        printErr("Failed to read given file (ftell failed)\n");
-        closeFileAfterErr(file);
-        return 1;
+    if (count) {
+        word[count++] = '\0';
+        char *item = malloc(count);
+        strncpy(item, word, count);
+        pTable->addItem(pTable, item);
     }
-    if (fseek(file, 0, SEEK_SET)) {
-        printErr("Failed to read given file (fseek failed)\n");
-        closeFileAfterErr(file);
-        return 1;
-    }
-
-    *fileContentsContainer = (char*) malloc((fileSize + 1) * sizeof(char));
-    if (*fileContentsContainer == NULL) {
-        printErr("Failed to allocate memory for contents of the given file\n");
-        closeFileAfterErr(file);
-        return 1;
-    }
-    (*fileContentsContainer)[fileSize] = '\0';
-    if (fread(*fileContentsContainer, fileSize, 1, file) != 1) {
-        printErr("Failed to read given file (fread failed)\n");
-        free(*fileContentsContainer);
-        closeFileAfterErr(file);
-        return 1;
-    }
-
-    if (fclose(file) != 0) {
-        printErr("Failed to close given file after reading\n");
-        free(*fileContentsContainer);
-        return 1;
-    }
-
+    fclose(file);
     return 0;
-}
-
-#undef closeFileAfterErr
-
-/*---------------------------------------------- Fill Multiset -------------------------------------------------------*/
-
-void fillHashTable(Multiset *hashTable, char *contents) {
-    char *word = strtok(contents, " ");
-    while (word != NULL) {
-        hashTable->addItem(hashTable, word);
-        word = strtok(NULL, " ");
-    }
 }
 
 /*-------------------------------------------------- Main ------------------------------------------------------------*/
@@ -121,38 +88,33 @@ void fillHashTable(Multiset *hashTable, char *contents) {
 int main(int argc, char *argv[]) {
     InputData inputData;
     if (parseClArgs(&inputData, argc, argv)) return EXIT_FAILURE;
+    const char *hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
 
-    Multiset hashTable;
+    Multiset hashTable, *pTable = &hashTable;
     if (Multiset_initMultiset(&hashTable, inputData.config) != MULTISET_E_OK) return EXIT_FAILURE;
 
-    char* fileContents = NULL;
-    if (readFile(inputData.filename, &fileContents)) {
-        Multiset_eraseMultiset(&hashTable);
-        return EXIT_FAILURE;
-    }
-
-    const clock_t begin = clock();
-    fillHashTable(&hashTable, fileContents);
-    const clock_t end = clock();
-    const double executionTime = (double) (end - begin) / CLOCKS_PER_SEC;
+    clock_t begin = clock();
+    readFile(pTable, inputData.filename);
+    clock_t end = clock();
+    double time = (double) (end - begin) / CLOCKS_PER_SEC;
 
     MultisetStats stats;
-    if (hashTable.getStatistics(&hashTable, &stats) != MULTISET_E_OK) {
-        Multiset_eraseMultiset(&hashTable);
-        free(fileContents);
-        return EXIT_FAILURE;
-    }
-    printf("Words number: %ld\n"
-           "Unique by hash words number: %ld\n"
-           "The most frequently used word: %s\n"
+    pTable->getStatistics(pTable, &stats);
+    printf("Words number: ......................... %ld\n"
+           "Unique by hash words number: .......... %ld\n"
+           "The most frequently used word: ........ %s\n"
            "Max number of words with the same hash: %ld\n"
-           "Execution time: %lf\n",
-           stats.itemsCount, stats.uniqueItemsCount, stats.maxCountWord, stats.maxCount, executionTime);
+           "Execution time: ....................... %lf\n"
+           "Size: ................................. %ld\n"
+           "Hash Function: ........................ %s\n",
+           stats.itemsCount, stats.uniqueItemsCount, stats.maxCountWord, stats.maxCount, time, inputData.config.size,
+           hashFuncsNames[inputData.config.hashFuncLabel]);
 
-    free(fileContents);
-    if (Multiset_eraseMultiset(&hashTable) != MULTISET_E_OK) return EXIT_FAILURE;
+    Multiset_eraseMultiset(pTable);
+
 
     return EXIT_SUCCESS;
 }
 
-#undef printErr
+#undef HASH_FUNCS_NAMES
+#undef HASH_FUNCS_NUM
