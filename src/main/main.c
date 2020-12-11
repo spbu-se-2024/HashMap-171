@@ -1,120 +1,177 @@
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
 #include "multiset/multiset.h"
+
 
 typedef struct {
     char *filename;
     MultisetConfig config;
 } InputData;
 
+
+/*-------------------------------------------------- Error Handling --------------------------------------------------*/
+
 #define printErr(errMsg) fprintf(stderr, errMsg)
+
+#define stopRunIf(isErr, codeToRunOnErr) \
+    do {                                 \
+        bool _isErr = (isErr);           \
+        if (_isErr) {                    \
+            {codeToRunOnErr}             \
+            return 1;                    \
+        }                                \
+    } while (false)
+
+#define printErrAndStopRunIf(isErr, errMsg, codeToRunOnErr) \
+    do {                                                    \
+        bool _isErr = (isErr);                              \
+        if (_isErr) {                                       \
+            printErr(errMsg);                               \
+            {codeToRunOnErr}                                \
+            return 1;                                       \
+        }                                                   \
+    } while (false)
+
 
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
 #define EXPECTED_CL_ARGS_NUM 3
-#define HASH_FUNCS_NUM 3
-#define HASH_FUNCS_NAMES {"md5","polynomial","sha-1"}
 
-unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
-    if (argc != EXPECTED_CL_ARGS_NUM + 1) {
-        printErr("Unexpected number of arguments\n");
-        return 1;
-    }
+static const char *HASH_FUNC_NAMES[3] = {
+    "md5",
+    "polynomial",
+    "sha-1",
+};
 
-    inputData->filename = argv[1];
 
-    inputData->config.size = strtoul(argv[2], NULL, 10);
-    if (inputData->config.size == 0 || !('0' <= argv[2][0] && argv[2][0] <= '9')) {
-        printErr("Invalid hash table size given (must be positive)\n");
-        return 1;
-    }
+int parseClArgs(InputData *inputData, size_t argc, char **argv) {
+    printErrAndStopRunIf(argc != EXPECTED_CL_ARGS_NUM, "Unexpected number of cl args arguments.\n",);
 
-    const char *hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
-    _Bool isHashFuncGiven = 0;
+
+    inputData->filename = argv[0];
+
+    inputData->config.size = strtoull(argv[1], NULL, 0);
+    printErrAndStopRunIf(inputData->config.size == 0, "Invalid hash table size given (must be positive).\n",);
+
+    bool isHashFuncGiven = false;
     for (unsigned int i = MULTISET_HASH_FUNC_LABEL_MD5; i <= MULTISET_HASH_FUNC_LABEL_SHA_1; i++) {
-        if (strcmp(argv[3], hashFuncsNames[i - MULTISET_HASH_FUNC_LABEL_MD5]) == 0) {
+        if (strcmp(argv[2], HASH_FUNC_NAMES[i - MULTISET_HASH_FUNC_LABEL_MD5]) == 0) {
             inputData->config.hashFuncLabel = i;
-            isHashFuncGiven = 1;
+            isHashFuncGiven = true;
         }
     }
-    if (!isHashFuncGiven) {
-        printErr("Unsupported hash function name given (must be md5, polynomial or sha-1)\n");
-        return 1;
-    }
+    printErrAndStopRunIf(!isHashFuncGiven,
+                         "Unsupported hash function name given (must be md5, polynomial or sha-1).\n",);
 
     return 0;
 }
 
-#undef EXPECTED_CL_ARGS_NUM
 
+/*------------------------------------------------------ Run App -----------------------------------------------------*/
 
-/*------------------------------------------------ Read File ---------------------------------------------------------*/
+#define MAX_WORD_LEN 10000
 
-int readFile(Multiset *pTable, char *filename) {
+int runApp(Multiset *pTable, char *filename) {
     FILE *file;
     file = fopen(filename, "r");
+    printErrAndStopRunIf(file == NULL, "Cannot open the file.\n",);
+
+    char word[MAX_WORD_LEN];
+    size_t count = 0;
 
     char c;
-    char word[1000];
-    size_t count = 0;
     while ((c = (char) fgetc(file)) != EOF) {
+        printErrAndStopRunIf(count == MAX_WORD_LEN, "Too long word in the text.\n", {
+            Multiset_eraseMultiset(pTable);
+            fclose(file);
+        });
+
         if (isalpha(c)) {
             word[count++] = c;
-        } else {
-            if (count != 0) {
-                word[count++] = '\0';
-                char *item = malloc(count);
-                strncpy(item, word, count);
-                pTable->addItem(pTable, item);
-            }
+        } else if (count != 0) {
+            word[count++] = '\0';
+
+            char *item = malloc(count);
+            printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", {
+                Multiset_eraseMultiset(pTable);
+                fclose(file);
+            });
+
+            strncpy(item, word, count);
+
+            stopRunIf(pTable->addItem(pTable, item), {
+                fclose(file);
+            });
+
             count = 0;
         }
     }
-    if (count) {
+
+    if (count != 0) {
         word[count++] = '\0';
+
         char *item = malloc(count);
+        printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", {
+            Multiset_eraseMultiset(pTable);
+            fclose(file);
+        });
+
         strncpy(item, word, count);
-        pTable->addItem(pTable, item);
+
+        stopRunIf(pTable->addItem(pTable, item), {
+            fclose(file);
+        });
     }
-    fclose(file);
+
+    printErrAndStopRunIf(fclose(file) == EOF, "Cannot close the file.\n",);
+
     return 0;
 }
 
-/*-------------------------------------------------- Main ------------------------------------------------------------*/
+
+/*------------------------------------------------------- Main -------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
     InputData inputData;
-    if (parseClArgs(&inputData, argc, argv)) return EXIT_FAILURE;
-    const char *hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
+    stopRunIf(parseClArgs(&inputData, argc - 1, argv + 1),);
+
 
     Multiset hashTable, *pTable = &hashTable;
-    if (Multiset_initMultiset(&hashTable, inputData.config) != MULTISET_E_OK) return EXIT_FAILURE;
+    stopRunIf(Multiset_initMultiset(&hashTable, inputData.config),);
+
 
     clock_t begin = clock();
-    readFile(pTable, inputData.filename);
+    stopRunIf(runApp(pTable, inputData.filename),);
     clock_t end = clock();
+
     double time = (double) (end - begin) / CLOCKS_PER_SEC;
 
+
     MultisetStats stats;
-    pTable->getStatistics(pTable, &stats);
-    printf("Words number: ......................... %ld\n"
-           "Unique by hash words number: .......... %ld\n"
-           "The most frequently used word: ........ %s\n"
-           "Max number of words with the same hash: %ld\n"
-           "Execution time: ....................... %lf\n"
-           "Size: ................................. %ld\n"
-           "Hash Function: ........................ %s\n",
-           stats.itemsCount, stats.uniqueItemsCount, stats.maxCountWord, stats.maxCount, time, inputData.config.size,
-           hashFuncsNames[inputData.config.hashFuncLabel]);
+    stopRunIf(pTable->getStatistics(pTable, &stats), {
+        Multiset_eraseMultiset(pTable);
+    });
+
+    printf(
+        "Words number............................. %ld\n"
+        "Unique by hash words number.............. %ld\n"
+        "The most frequently used word............ %s\n"
+        "Max number of words with the same hash... %ld\n"
+        "Size..................................... %ld\n"
+        "Hash Function............................ %s\n"
+        "Execution time........................... %lf\n",
+        stats.itemsCount, stats.uniqueItemsCount,
+        stats.maxCountWord, stats.maxCount,
+        inputData.config.size, HASH_FUNC_NAMES[inputData.config.hashFuncLabel],
+        time
+    );
+
 
     Multiset_eraseMultiset(pTable);
 
-
-    return EXIT_SUCCESS;
+    return 0;
 }
-
-#undef HASH_FUNCS_NAMES
-#undef HASH_FUNCS_NUM

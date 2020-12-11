@@ -31,7 +31,7 @@ MultisetErrCode Multiset_initMultiset(Multiset *multiset, MultisetConfig config)
     for (size_t i = 0; i < config.size; i++) {
         Multiset_stopRunOnBadErrCode(
             Multiset_convertAvlTreeErrCode(
-                AvlTree_initAvlTree(&multiset->_data[i], Multiset_itemComparerForAvlTree, NULL)
+                AvlTree_initAvlTree(&multiset->_data[i], Multiset_itemComparerForAvlTree, free)
             ),
             { free(multiset->_data); }
         );
