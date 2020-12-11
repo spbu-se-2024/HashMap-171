@@ -37,6 +37,48 @@ typedef struct {
     } while (false)
 
 
+/*-------------------------------------------------------- Vector ----------------------------------------------------*/
+
+typedef struct {
+    const char **buf;
+    size_t cap;
+    size_t size;
+} Vector;
+
+int vInit(Vector *vector, size_t cap);
+
+int vPush(Vector *vector, const char *s);
+
+void vErase(Vector *vector);
+
+
+int vInit(Vector *vector, size_t cap) {
+    vector->buf = malloc(cap * sizeof *vector->buf);
+    printErrAndStopRunIf(vector->buf == NULL, "Cannot allocate memory.\n",);
+    vector->cap = cap;
+    vector->size = 0;
+
+    return 0;
+}
+
+int vPush(Vector *vector, const char *s) {
+    if (vector->size == vector->cap) vector->cap *= 2;
+
+    void *tempBuf = realloc(vector->buf, vector->cap * sizeof *vector->buf);
+    printErrAndStopRunIf(tempBuf == NULL, "Cannot reallocate memory.\n",);
+    vector->buf = tempBuf;
+
+    vector->buf[vector->size++] = s;
+
+    return 0;
+}
+
+void vErase(Vector *vector) {
+    free(vector->buf);
+    vector->buf = NULL;
+}
+
+
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
 #define EXPECTED_CL_ARGS_NUM 3
@@ -71,11 +113,11 @@ int parseClArgs(InputData *inputData, size_t argc, char **argv) {
 }
 
 
-/*------------------------------------------------------ Run App -----------------------------------------------------*/
+/*----------------------------------------------------- Read File ----------------------------------------------------*/
 
 #define MAX_WORD_LEN 10000
 
-int runApp(Multiset *pTable, char *filename) {
+int readFile(Vector *v, char *filename) {
     FILE *file;
     file = fopen(filename, "r");
     printErrAndStopRunIf(file == NULL, "Cannot open the file.\n",);
@@ -85,10 +127,7 @@ int runApp(Multiset *pTable, char *filename) {
 
     char c;
     while ((c = (char) fgetc(file)) != EOF) {
-        printErrAndStopRunIf(count == MAX_WORD_LEN, "Too long word in the text.\n", {
-            Multiset_eraseMultiset(pTable);
-            fclose(file);
-        });
+        printErrAndStopRunIf(count == MAX_WORD_LEN, "Too long word in the text.\n", { fclose(file); });
 
         if (isalpha(c)) {
             word[count++] = c;
@@ -96,16 +135,11 @@ int runApp(Multiset *pTable, char *filename) {
             word[count++] = '\0';
 
             char *item = malloc(count);
-            printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", {
-                Multiset_eraseMultiset(pTable);
-                fclose(file);
-            });
+            printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", { fclose(file); });
 
             strncpy(item, word, count);
 
-            stopRunIf(pTable->addItem(pTable, item), {
-                fclose(file);
-            });
+            stopRunIf(vPush(v, item), { fclose(file); });
 
             count = 0;
         }
@@ -115,14 +149,11 @@ int runApp(Multiset *pTable, char *filename) {
         word[count++] = '\0';
 
         char *item = malloc(count);
-        printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", {
-            Multiset_eraseMultiset(pTable);
-            fclose(file);
-        });
+        printErrAndStopRunIf(item == NULL, "Cannot allocate memory.\n", { fclose(file); });
 
         strncpy(item, word, count);
 
-        stopRunIf(pTable->addItem(pTable, item), {
+        stopRunIf(vPush(v, item), {
             fclose(file);
         });
     }
@@ -133,27 +164,58 @@ int runApp(Multiset *pTable, char *filename) {
 }
 
 
+/*------------------------------------------------------ Run App -----------------------------------------------------*/
+
+int runApp(Multiset *multiset, Vector *v) {
+    size_t vSize = v->size;
+    for (size_t i = 0; i < vSize; ++i) {
+        stopRunIf(multiset->addItem(multiset, v->buf[i]),);
+    }
+
+    return 0;
+}
+
+
 /*------------------------------------------------------- Main -------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
+    // Read CL Args
     InputData inputData;
     stopRunIf(parseClArgs(&inputData, argc - 1, argv + 1),);
 
 
-    Multiset hashTable, *pTable = &hashTable;
-    stopRunIf(Multiset_initMultiset(&hashTable, inputData.config),);
+    // Init Structures
+    Vector v;
+    stopRunIf(vInit(&v, 16), { vErase(&v); });
 
+    Multiset set, *pSet = &set;
+    stopRunIf(Multiset_initMultiset(&set, inputData.config), {
+        vErase(&v);
+        Multiset_eraseMultiset(pSet);
+    });
+
+
+    // Read File & Run App
+    stopRunIf(readFile(&v, inputData.filename), {
+        vErase(&v);
+        Multiset_eraseMultiset(pSet);
+    });
 
     clock_t begin = clock();
-    stopRunIf(runApp(pTable, inputData.filename),);
+    stopRunIf(runApp(pSet, &v), {
+        vErase(&v);
+        Multiset_eraseMultiset(pSet);
+    });
     clock_t end = clock();
-
     double time = (double) (end - begin) / CLOCKS_PER_SEC;
 
+    vErase(&v);
 
+
+    // Print stats
     MultisetStats stats;
-    stopRunIf(pTable->getStatistics(pTable, &stats), {
-        Multiset_eraseMultiset(pTable);
+    stopRunIf(pSet->getStatistics(pSet, &stats), {
+        Multiset_eraseMultiset(pSet);
     });
 
     printf(
@@ -170,8 +232,8 @@ int main(int argc, char *argv[]) {
         time
     );
 
+    Multiset_eraseMultiset(pSet);
 
-    Multiset_eraseMultiset(pTable);
 
     return 0;
 }
