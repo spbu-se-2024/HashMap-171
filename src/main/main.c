@@ -5,12 +5,14 @@
 
 #include "multiset/multiset.h"
 
+
 #define printErr(errMsg) fprintf(stderr, errMsg)
 
 typedef struct {
     char *filename;
     MultisetConfig config;
 } InputData;
+
 
 /*------------------------------------------- Parse Command Line Arguments -------------------------------------------*/
 
@@ -32,8 +34,8 @@ unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
         return 1;
     }
 
-    const char* hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
-    _Bool isHashFuncGiven = 0;
+    const char *hashFuncsNames[HASH_FUNCS_NUM] = HASH_FUNCS_NAMES;
+    bool isHashFuncGiven = 0;
     for (unsigned int i = MULTISET_HASH_FUNC_LABEL_MD5; i <= MULTISET_HASH_FUNC_LABEL_SHA_1; i++) {
         if (strcmp(argv[3], hashFuncsNames[i - MULTISET_HASH_FUNC_LABEL_MD5]) == 0) {
             inputData->config.hashFuncLabel = i;
@@ -52,11 +54,12 @@ unsigned int parseClArgs(InputData *inputData, size_t argc, char **argv) {
 #undef HASH_FUNCS_NUM
 #undef HASH_FUNCS_NAMES
 
+
 /*------------------------------------------------ Read File ---------------------------------------------------------*/
 
 #define closeFileAfterErr(file) if (fclose(file) != 0) printErr("Also failed to close the file\n")
 
-unsigned int readFile(char *filename, char** fileContentsContainer) {
+unsigned int readFile(char *filename, char **fileContentsContainer) {
     FILE *file;
     file = fopen(filename, "r");
     if (file == NULL) {
@@ -81,7 +84,7 @@ unsigned int readFile(char *filename, char** fileContentsContainer) {
         return 1;
     }
 
-    *fileContentsContainer = (char*) malloc((fileSize + 1) * sizeof(char));
+    *fileContentsContainer = malloc(fileSize + 1);
     if (*fileContentsContainer == NULL) {
         printErr("Failed to allocate memory for contents of the given file\n");
         closeFileAfterErr(file);
@@ -106,6 +109,7 @@ unsigned int readFile(char *filename, char** fileContentsContainer) {
 
 #undef closeFileAfterErr
 
+
 /*---------------------------------------------- Fill Multiset -------------------------------------------------------*/
 
 void fillHashTable(Multiset *hashTable, char *contents) {
@@ -116,6 +120,7 @@ void fillHashTable(Multiset *hashTable, char *contents) {
     }
 }
 
+
 /*-------------------------------------------------- Main ------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
@@ -125,7 +130,7 @@ int main(int argc, char *argv[]) {
     Multiset hashTable;
     if (Multiset_initMultiset(&hashTable, inputData.config) != MULTISET_E_OK) return EXIT_FAILURE;
 
-    char* fileContents = NULL;
+    char *fileContents = NULL;
     if (readFile(inputData.filename, &fileContents)) {
         Multiset_eraseMultiset(&hashTable);
         return EXIT_FAILURE;

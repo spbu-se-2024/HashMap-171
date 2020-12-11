@@ -13,13 +13,15 @@ static void dummyFunc() {}
 
 
 static void TestAvlTree_ErrCodes_NullAvlTreePtr_ReturnNullArgErr(CuTest *tc) {
-    CuAssertIntEquals_Msg(tc, "initAvlTree failed", AVL_TREE_E_NULL_ARG, AvlTree_initAvlTree(NULL, (AvlTreeItemCompF) dummyFunc, dummyFunc));
+    CuAssertIntEquals_Msg(tc, "initAvlTree failed", AVL_TREE_E_NULL_ARG,
+                          AvlTree_initAvlTree(NULL, (AvlTreeItemCompF) dummyFunc, dummyFunc));
     CuAssertIntEquals_Msg(tc, "eraseAvlTree failed", AVL_TREE_E_NULL_ARG, AvlTree_eraseAvlTree(NULL));
 }
 
 static void TestAvlTree_ErrCodes_NullItemCompPtr_ReturnNullArgErr(CuTest *tc) {
     AvlTree dummyAvlTree;
-    CuAssertIntEquals_Msg(tc, "initAvlTree failed", AVL_TREE_E_NULL_ARG, AvlTree_initAvlTree(&dummyAvlTree, NULL, dummyFunc));
+    CuAssertIntEquals_Msg(tc, "initAvlTree failed", AVL_TREE_E_NULL_ARG,
+                          AvlTree_initAvlTree(&dummyAvlTree, NULL, dummyFunc));
 }
 
 static void TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr(CuTest *tc) {
@@ -29,14 +31,20 @@ static void TestAvlTree_ErrCodes_NullThis_ReturnNullThisErr(CuTest *tc) {
     int dummyInt = 1;
     AvlTreeNode dummyNode = {0}, *dummyNodePtr = &dummyNode;
 
-    CuAssertIntEquals_Msg(tc, "findItem failed", AVL_TREE_E_NULL_THIS, avlTree.findItem(NULL, &dummyInt, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "findClosestItem failed", AVL_TREE_E_NULL_THIS, avlTree.findClosestItem(NULL, &dummyInt, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "prevNode failed", AVL_TREE_E_NULL_THIS, avlTree.prevNode(NULL, &dummyNode, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "nextNode failed", AVL_TREE_E_NULL_THIS, avlTree.nextNode(NULL, &dummyNode, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "findItem failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.findItem(NULL, &dummyInt, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "findClosestItem failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.findClosestItem(NULL, &dummyInt, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "prevNode failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.prevNode(NULL, &dummyNode, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "nextNode failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.nextNode(NULL, &dummyNode, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "addItem failed", AVL_TREE_E_NULL_THIS, avlTree.addItem(NULL, &dummyInt, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "addItemTimes failed", AVL_TREE_E_NULL_THIS, avlTree.addItemTimes(NULL, &dummyInt, 1, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "addItemTimes failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.addItemTimes(NULL, &dummyInt, 1, &dummyNodePtr));
     CuAssertIntEquals_Msg(tc, "removeItem failed", AVL_TREE_E_NULL_THIS, avlTree.removeItem(NULL, &dummyInt));
-    CuAssertIntEquals_Msg(tc, "removeItemWithCopies failed", AVL_TREE_E_NULL_THIS, avlTree.removeItemWithCopies(NULL, &dummyInt));
+    CuAssertIntEquals_Msg(tc, "removeItemWithCopies failed", AVL_TREE_E_NULL_THIS,
+                          avlTree.removeItemWithCopies(NULL, &dummyInt));
     CuAssertIntEquals_Msg(tc, "traverse failed", AVL_TREE_E_NULL_THIS, avlTree.traverse(NULL, &dummyInt, dummyFunc));
     CuAssertIntEquals_Msg(tc, "clear failed", AVL_TREE_E_NULL_THIS, avlTree.clear(NULL));
 }
@@ -48,19 +56,32 @@ static void TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr(CuTest *tc) {
     int dummyInt;
     AvlTreeNode *dummyNodePtr;
 
-    CuAssertIntEquals_Msg(tc, "findItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.findItem(&avlTree, NULL, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "findItem failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.findItem(&avlTree, &dummyInt, NULL));
-    CuAssertIntEquals_Msg(tc, "findClosestItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.findClosestItem(&avlTree, NULL, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "findClosestItem failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.findClosestItem(&avlTree, &dummyInt, NULL));
-    CuAssertIntEquals_Msg(tc, "prevNode failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.prevNode(&avlTree, NULL, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "prevNode failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.prevNode(&avlTree, dummyNodePtr, NULL));
-    CuAssertIntEquals_Msg(tc, "nextNode failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.nextNode(&avlTree, NULL, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "nextNode failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.nextNode(&avlTree, dummyNodePtr, NULL));
-    CuAssertIntEquals_Msg(tc, "addItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.addItem(&avlTree, NULL, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "addItemTimes failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.addItemTimes(&avlTree, NULL, 1, &dummyNodePtr));
-    CuAssertIntEquals_Msg(tc, "removeItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.removeItem(&avlTree, NULL));
-    CuAssertIntEquals_Msg(tc, "removeItemWithCopies failed on it's 2nd arg", AVL_TREE_E_NULL_ARG, avlTree.removeItemWithCopies(&avlTree, NULL));
-    CuAssertIntEquals_Msg(tc, "traverse failed on it's 3rd arg", AVL_TREE_E_NULL_ARG, avlTree.traverse(&avlTree, &dummyInt, NULL));
+    CuAssertIntEquals_Msg(tc, "findItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.findItem(&avlTree, NULL, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "findItem failed on it's 3rd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.findItem(&avlTree, &dummyInt, NULL));
+    CuAssertIntEquals_Msg(tc, "findClosestItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.findClosestItem(&avlTree, NULL, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "findClosestItem failed on it's 3rd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.findClosestItem(&avlTree, &dummyInt, NULL));
+    CuAssertIntEquals_Msg(tc, "prevNode failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.prevNode(&avlTree, NULL, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "prevNode failed on it's 3rd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.prevNode(&avlTree, dummyNodePtr, NULL));
+    CuAssertIntEquals_Msg(tc, "nextNode failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.nextNode(&avlTree, NULL, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "nextNode failed on it's 3rd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.nextNode(&avlTree, dummyNodePtr, NULL));
+    CuAssertIntEquals_Msg(tc, "addItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.addItem(&avlTree, NULL, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "addItemTimes failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.addItemTimes(&avlTree, NULL, 1, &dummyNodePtr));
+    CuAssertIntEquals_Msg(tc, "removeItem failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.removeItem(&avlTree, NULL));
+    CuAssertIntEquals_Msg(tc, "removeItemWithCopies failed on it's 2nd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.removeItemWithCopies(&avlTree, NULL));
+    CuAssertIntEquals_Msg(tc, "traverse failed on it's 3rd arg", AVL_TREE_E_NULL_ARG,
+                          avlTree.traverse(&avlTree, &dummyInt, NULL));
 }
 
 
@@ -68,9 +89,9 @@ static void TestAvlTree_ErrCodes_NullArgPtrs_ReturnNullArgErr(CuTest *tc) {
 
 static _Bool isCorrectBST(struct avl_tree_node_t *avlTreeNode, AvlTreeItemCompF cmp) {
     return (avlTreeNode->left == NULL ||
-    (cmp(avlTreeNode->left->item, avlTreeNode->item) < 0 && isCorrectBST(avlTreeNode->left, cmp))) &&
-    (avlTreeNode->right == NULL ||
-    (cmp(avlTreeNode->item, avlTreeNode->right->item) < 0 && isCorrectBST(avlTreeNode->right, cmp)));
+            (cmp(avlTreeNode->left->item, avlTreeNode->item) < 0 && isCorrectBST(avlTreeNode->left, cmp))) &&
+           (avlTreeNode->right == NULL ||
+            (cmp(avlTreeNode->item, avlTreeNode->right->item) < 0 && isCorrectBST(avlTreeNode->right, cmp)));
 }
 
 

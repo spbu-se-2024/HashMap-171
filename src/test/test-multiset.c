@@ -57,10 +57,12 @@ static void TestMultiset_AddCountUnique_EqualsAvlTreeCountUnique(CuTest *tc) {
     CuAssertIntEquals(tc, 0, countTreesUniqueItems(&multiset));
     for (size_t i = 0; i < strsNum - 1; i++) {
         multiset.addItem(&multiset, strs[i]);
-        CuAssertTrue(tc, multiset.uniqueItemsCount == i + 1 && multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
+        CuAssertTrue(tc, multiset.uniqueItemsCount == i + 1 &&
+                         multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
     }
     multiset.addItem(&multiset, strs[strsNum - 1]);
-    CuAssertTrue(tc, multiset.uniqueItemsCount == strsNum - 1 && multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
+    CuAssertTrue(tc, multiset.uniqueItemsCount == strsNum - 1 &&
+                     multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
 
     Multiset_eraseMultiset(&multiset);
 }
@@ -82,7 +84,8 @@ static void TestMultiset_AddAllCharsCountMixed_EqualsAvlTreeCountMixed(CuTest *t
     for (size_t i = 0; i < strsNum; i++) {
         multiset.addItem(&multiset, strs[i]);
         CuAssertTrue(tc, multiset.itemsCount == i + 1 && multiset.itemsCount == countTreesItems(&multiset));
-        CuAssertTrue(tc, multiset.uniqueItemsCount == i + 1 && multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
+        CuAssertTrue(tc, multiset.uniqueItemsCount == i + 1 &&
+                         multiset.uniqueItemsCount == countTreesUniqueItems(&multiset));
     }
 
     Multiset_eraseMultiset(&multiset);
