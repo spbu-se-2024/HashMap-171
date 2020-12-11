@@ -34,7 +34,7 @@ static void TestMultiset_AddCount_EqualsAvlTreeCount(CuTest *tc) {
     Multiset_initMultiset(&multiset, config);
 
     const size_t strsNum = 4, maxCStrLen = 4;
-    char **strs = malloc(strsNum * sizeof(char*));
+    char *strs[strsNum];
     for (size_t i = 0; i < strsNum; i++) {
         strs[i] = malloc(maxCStrLen * sizeof(char));
     }
@@ -59,7 +59,7 @@ static void TestMultiset_AddCountUnique_EqualsAvlTreeCountUnique(CuTest *tc) {
     Multiset_initMultiset(&multiset, config);
 
     const size_t strsNum = 5, maxCStrLen = 7;
-    char **strs = malloc(strsNum * sizeof(char*));
+    char *strs[strsNum];
     for (size_t i = 0; i < strsNum; i++) {
         strs[i] = malloc(maxCStrLen * sizeof(char));
     }
@@ -89,7 +89,7 @@ static void TestMultiset_AddAllCharsCountMixed_EqualsAvlTreeCountMixed(CuTest *t
     Multiset_initMultiset(&multiset, config);
 
     const size_t strsNum = 256, maxCStrLen = 2;
-    char **strs = malloc(strsNum * sizeof(char*));
+    char *strs[strsNum];
     for (size_t i = 0; i < strsNum; i++) {
         strs[i] = malloc(maxCStrLen * sizeof(char));
         strs[i][0] = (char) i;
