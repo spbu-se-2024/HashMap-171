@@ -23,23 +23,23 @@ jobs:
           cmake .. && \
           make
 
-      - name: Run Tests
-        run: build/src/test/run_tests
+      - name: Warm up machine
+        run: for i in {1..10}; do build/src/main/run_app src/res/war_and_peace.txt 1000 polynomial; done
 
-      - name: Run App - MD5 - size = 1000
-        run: build/src/main/run_app src/res/war_and_peace.txt 1000 md5
-
-      - name: Run App - Polynomial - size = 1000
-        run: build/src/main/run_app src/res/war_and_peace.txt 1000 polynomial
-
-      - name: Run App - SHA-1 - size = 1000
-        run: build/src/main/run_app src/res/war_and_peace.txt 1000 sha-1
-
-      - name: Run App - MD5 - size = 10
-        run: build/src/main/run_app src/res/war_and_peace.txt 10 md5
+      - name: Run App - Polynomial - size = 1
+        run: build/src/main/run_app src/res/war_and_peace.txt 1 polynomial
 
       - name: Run App - Polynomial - size = 10
         run: build/src/main/run_app src/res/war_and_peace.txt 10 polynomial
 
-      - name: Run App - SHA-1 - size = 10
-        run: build/src/main/run_app src/res/war_and_peace.txt 10 sha-1
+      - name: Run App - Polynomial - size = 100
+        run: build/src/main/run_app src/res/war_and_peace.txt 100 polynomial
+
+      - name: Run App - Polynomial - size = 1000
+        run: build/src/main/run_app src/res/war_and_peace.txt 1000 polynomial
+
+      - name: Run App - Polynomial - size = 10000
+        run: build/src/main/run_app src/res/war_and_peace.txt 10000 polynomial
+
+      - name: Run Tests
+        run: build/src/test/run_tests
